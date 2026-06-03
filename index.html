@@ -104,6 +104,10 @@ body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--te
 .main-lift-select, .acc-select { width: 100%; padding: 8px 28px 8px 12px; font-size: 14px; font-family: 'Barlow', sans-serif; font-weight: 500; border-radius: var(--rs); border: 1px solid var(--border2); background: var(--surface2); color: var(--text); outline: none; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237a7b85' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; margin-bottom: 10px; }
 .acc-select { font-size: 13px; padding: 7px 28px 7px 10px; margin-bottom: 0; }
 .main-lift-select:focus, .acc-select:focus { border-color: var(--accent); }
+.main-lift-select { font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.5px; padding: 12px 36px 12px 14px; border-radius: var(--r); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23f0c040' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); }
+.main-lift-select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(240,192,64,0.1); }
+.acc-select { font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.5px; padding: 11px 36px 11px 14px; border-radius: var(--r); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a7b85' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); margin-bottom: 8px; }
+.acc-select:focus { border-color: rgba(93,219,138,0.5); box-shadow: 0 0 0 2px rgba(93,219,138,0.08); }
 
 .lift-color-bar { height: 3px; border-radius: 2px; margin-bottom: 10px; background: rgba(255,255,255,0.1); }
 
@@ -226,6 +230,23 @@ canvas { width: 100% !important; }
 }
 .skip-day-btn:hover { border-color: var(--muted); color: var(--muted); }
 .skip-day-btn.skipped { border-color: #7a7b85; color: #7a7b85; background: rgba(120,120,130,0.1); }
+
+
+.lift-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.lift-btn {
+  padding: 12px 8px;
+  font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700;
+  letter-spacing: 1px; text-transform: uppercase;
+  border-radius: var(--rs); border: 1px solid var(--border2);
+  background: var(--surface2); color: var(--muted);
+  cursor: pointer; transition: all 0.15s; text-align: center;
+}
+.lift-btn:hover { background: var(--surface3); }
+.lift-btn.selected { background: var(--surface2); color: white; border-width: 2px; }
+.lift-btn[data-lift="Back Squat"].selected { border-color: #60a0ff; color: #60a0ff; background: rgba(96,160,255,0.1); }
+.lift-btn[data-lift="Bench Press"].selected { border-color: #50dc78; color: #50dc78; background: rgba(80,220,120,0.1); }
+.lift-btn[data-lift="Deadlift"].selected { border-color: #b464ff; color: #b464ff; background: rgba(180,100,255,0.1); }
+.lift-btn[data-lift="Shoulder Press"].selected { border-color: #ff8250; color: #ff8250; background: rgba(255,130,80,0.1); }
 
 .no-data { text-align: center; padding: 2rem; font-size: 13px; color: var(--muted); }
 input::placeholder { color: var(--muted2); }
@@ -827,7 +848,7 @@ function renderDays(anim){
     const savedLoad=saved?.load!==undefined?saved.load:(presc?.load||'');
     const liftColor=selLift?LIFT_COLORS[selLift]:'rgba(255,255,255,0.1)';
     const pctLabel=presc?`${Math.round(presc.pct*100)}% 1RM · ${PROGRAM[currentWeek-1].sets}×${PROGRAM[currentWeek-1].reps}`:'Select a lift to auto-fill';
-    const accs=saved?.accs||[{ex:ALL_ACCESSORIES[0],s:'',r:''}];
+    const accs=saved?.accs||[{ex:'',s:'',r:''}];
     const accHTML=accs.map((a,i)=>buildAccItem(d,i,a)).join('');
 
     const isSkipped=saved?.skipped||false;
@@ -917,9 +938,10 @@ function toggleDay(d){
 
 function buildAccItem(d,i,a){
   const opts=ALL_ACCESSORIES.map(ex=>`<option value="${ex}"${ex===(a.ex||'')?' selected':''}>${ex}</option>`).join('');
+  const defaultOpt=a.ex?'':"<option value='' disabled selected>— select accessory —</option>";
   return `<div class="acc-item" id="d${d}_acc_${i}">
     <div class="acc-item-top">
-      <select class="acc-select" id="d${d}_ac${i}_ex">${opts}</select>
+      <select class="acc-select" id="d${d}_ac${i}_ex">${defaultOpt}${opts}</select>
     </div>
     <div class="acc-input-labels"><span>Sets</span><span>Reps</span></div>
     <div class="acc-item-bottom">
@@ -938,7 +960,7 @@ function addAccItem(d){
   const container=document.getElementById(`d${d}_accs`);
   const i=container.querySelectorAll('.acc-item').length;
   const div=document.createElement('div');
-  div.innerHTML=buildAccItem(d,i,{ex:ALL_ACCESSORIES[0],s:'',r:''});
+  div.innerHTML=buildAccItem(d,i,{ex:'',s:'',r:''});
   container.appendChild(div.firstElementChild);
 }
 
