@@ -657,7 +657,7 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
 }
 #onboarding.hide { opacity: 0; pointer-events: none; }
 
-.ob-screen { display: none; flex-direction: column; flex: 1; padding: 2rem 1.5rem 2.5rem; justify-content: flex-end; }
+.ob-screen { display: none; flex-direction: column; flex: 1; padding: 2rem 1.5rem 2.5rem; justify-content: space-between; }
 .ob-screen.active { display: flex; }
 
 .ob-logo { margin-bottom: auto; padding-top: 2rem; }
@@ -676,7 +676,7 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
 .ob-logo-line { width: 48px; height: 2px; background: var(--accent); margin-bottom: 4px; }
 .ob-logo-word { font-family: 'Arial Black', sans-serif; font-size: 7px; color: var(--accent); letter-spacing: 2px; }
 
-.ob-content { margin-bottom: 2rem; }
+.ob-content { }
 .ob-eyebrow {
   font-family: 'Barlow Condensed', sans-serif; font-size: 12px;
   font-weight: 700; letter-spacing: 3px; text-transform: uppercase;
@@ -733,17 +733,19 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
 
   <!-- Screen 1: Welcome -->
   <div class="ob-screen active" id="ob-1">
-
+    <div></div>
     <div class="ob-content">
       <div class="ob-eyebrow">Welcome</div>
       <div class="ob-title">Train smarter.<br>Lift heavier.</div>
-      <div class="ob-sub">Your personal strength coach — built around your numbers, designed to get you stronger every week.</div>
+      <div class="ob-sub" style="margin-top:12px">Your personal strength coach — built around your numbers, designed to get you stronger every week.</div>
     </div>
-    <div class="ob-step-dots">
-      <div class="ob-dot active"></div>
-      <div class="ob-dot"></div>
+    <div>
+      <div class="ob-step-dots">
+        <div class="ob-dot active"></div>
+        <div class="ob-dot"></div>
+      </div>
+      <button class="ob-btn" onclick="obNext()">Get Started</button>
     </div>
-    <button class="ob-btn" onclick="obNext()">Get Started</button>
   </div>
 
   <!-- Screen 2: How it works -->
