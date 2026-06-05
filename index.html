@@ -657,7 +657,7 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
 }
 #onboarding.hide { opacity: 0; pointer-events: none; }
 
-.ob-screen { display: none; flex-direction: column; flex: 1; padding: 2rem 1.5rem 2.5rem; }
+.ob-screen { display: none; flex-direction: column; flex: 1; padding: 2rem 1.5rem 2.5rem; justify-content: flex-end; }
 .ob-screen.active { display: flex; }
 
 .ob-logo { margin-bottom: auto; padding-top: 2rem; }
@@ -1295,9 +1295,9 @@ function renderDays(anim){
 
   // No plan selected — show empty state, hide week nav etc
   if(!activePlan || !PROGRAMS[activePlan]) {
-    // Hide week nav and progress bar
     document.querySelector('.week-nav-wrap').style.display = 'none';
     document.querySelector('.cycle-progress-wrap') && (document.querySelector('.cycle-progress-wrap').style.display = 'none');
+    document.querySelector('.page-header') && (document.querySelector('.page-header').style.display = 'none');
     scroll.innerHTML = `<div style="padding:3rem 1.25rem;text-align:center">
       <div style="font-size:48px;margin-bottom:1.25rem">🏋️</div>
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;letter-spacing:1px;color:var(--accent);margin-bottom:8px">No program selected</div>
@@ -1309,6 +1309,7 @@ function renderDays(anim){
   // Restore week nav if previously hidden
   document.querySelector('.week-nav-wrap').style.display = '';
   document.querySelector('.cycle-progress-wrap') && (document.querySelector('.cycle-progress-wrap').style.display = '');
+  document.querySelector('.page-header') && (document.querySelector('.page-header').style.display = '');
 
   // Track which day to auto-open: first unsaved, or day 1
   let autoOpen = 1;
@@ -2095,6 +2096,7 @@ function showPRPrompt(missing) {
         <input type="number" min="0" step="2.5" placeholder="0"
           value="${setupData[l]||''}"
           id="prprompt_${l.replace(/ /g,'_')}"
+          oninput="checkPRPromptReady()"
           style="width:80px;padding:7px 10px;font-size:14px;text-align:center;border-radius:var(--rs);border:1px solid ${isMissing?'rgba(240,192,64,0.5)':'var(--border2)'};background:var(--surface2);color:var(--text);outline:none;"/>
         <span style="font-size:12px;color:var(--muted)">${weightUnit()}</span>
       </div>
@@ -2106,24 +2108,68 @@ function showPRPrompt(missing) {
       <div style="font-family:'Bebas Neue','Barlow Condensed',sans-serif;font-size:22px;letter-spacing:2px;color:var(--accent);margin-bottom:4px;">Enter Your 1 Rep Max</div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:1.25rem;line-height:1.5">Your PRs are needed to calculate training weights. Enter your current 1RM for each lift.</div>
       ${fields}
-      <button onclick="savePRPrompt()" style="width:100%;margin-top:1.25rem;padding:12px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border-radius:var(--rs);border:1px solid var(--accent);background:var(--accent);color:#111;cursor:pointer;">Save & Start Training</button>
+      <button id="pr-prompt-save-btn" onclick="savePRPrompt()" disabled style="width:100%;margin-top:1.25rem;padding:12px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border-radius:var(--rs);border:1px solid var(--border2);background:var(--surface2);color:var(--muted2);cursor:not-allowed;transition:all 0.2s;">Save & Start Training</button>
     </div>`;
   document.body.appendChild(overlay);
 }
 
+
+function checkPRPromptReady() {
+  const allFilled = MAIN_LIFTS.every(l => {
+    const val = document.getElementById('prprompt_'+l.replace(/ /g,'_'))?.value;
+    return val && parseFloat(val) > 0;
+  });
+  const btn = document.getElementById('pr-prompt-save-btn');
+  if(!btn) return;
+  if(allFilled) {
+    btn.disabled = false;
+    btn.style.cssText = 'width:100%;margin-top:1.25rem;padding:12px;font-family:Barlow Condensed,sans-serif;font-size:15px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border-radius:var(--rs);border:1px solid var(--accent);background:var(--accent);color:#111;cursor:pointer;transition:all 0.2s;';
+  } else {
+    btn.disabled = true;
+    btn.style.cssText = 'width:100%;margin-top:1.25rem;padding:12px;font-family:Barlow Condensed,sans-serif;font-size:15px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border-radius:var(--rs);border:1px solid var(--border2);background:var(--surface2);color:var(--muted2);cursor:not-allowed;transition:all 0.2s;';
+  }
+}
+
 function savePRPrompt() {
+  // Validate all 4 lifts have values
+  const missing = MAIN_LIFTS.filter(l => {
+    const val = document.getElementById('prprompt_'+l.replace(/ /g,'_'))?.value;
+    return !val || parseFloat(val) <= 0;
+  });
+  if(missing.length > 0) return;
+
   MAIN_LIFTS.forEach(l => {
     const val = document.getElementById('prprompt_'+l.replace(/ /g,'_'))?.value;
-    if(val && parseFloat(val) > 0) setupData[l] = parseFloat(val);
+    setupData[l] = parseFloat(val);
   });
   localStorage.setItem('ll_setup', JSON.stringify(setupData));
   document.getElementById('pr-prompt-overlay')?.remove();
-  autoPopulateAllWeeks();
-  renderAll();
-  renderPRs();
-  const planName = activePlan==='531' ? '5/3/1 Wendler' : '12-Week Periodization';
-  showToast('Ready to train!');
-  switchPage('log');
+
+  // Show transition overlay
+  showProgramReadyOverlay();
+}
+
+function showProgramReadyOverlay() {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:700;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;';
+  overlay.innerHTML = `
+    <div style="font-size:56px;animation:bounce 0.5s ease">⚡</div>
+    <div style="font-family:'Bebas Neue','Barlow Condensed',sans-serif;font-size:32px;letter-spacing:3px;color:var(--accent)">You're all set!</div>
+    <div style="font-size:14px;color:var(--muted);text-align:center;max-width:260px;line-height:1.6">Your program is ready. Every weight has been calculated from your 1 Rep Max.</div>
+    <div style="font-size:12px;color:var(--muted2);margin-top:8px">Loading your training...</div>`;
+  document.body.appendChild(overlay);
+
+  setTimeout(() => {
+    autoPopulateAllWeeks();
+    renderAll();
+    renderPRs();
+    overlay.style.opacity = '0';
+    overlay.style.transition = 'opacity 0.4s ease';
+    setTimeout(() => {
+      overlay.remove();
+      switchPage('log');
+    }, 400);
+  }, 2000);
 }
 
 function showPlanConfirm(planId) {
