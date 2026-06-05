@@ -1711,7 +1711,7 @@ function savePRs() {
   localStorage.setItem('ll_setup', JSON.stringify(setupData));
   // Repopulate all weeks with new weights
   autoPopulateAllWeeks();
-  if(document.getElementById('page-log').classList.contains('active')) renderDays();
+  renderAll(); // always re-render so loads update everywhere
   // Reset button
   const btn = document.getElementById('prs-save-btn');
   if(btn) {
