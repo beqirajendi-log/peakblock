@@ -1313,6 +1313,19 @@ function renderDays(anim){
   document.querySelector('.cycle-progress-wrap') && (document.querySelector('.cycle-progress-wrap').style.display = '');
   document.querySelector('.page-header') && (document.querySelector('.page-header').style.display = '');
 
+  // Show PRs missing banner if no 1RMs set
+  const missingPRs = MAIN_LIFTS.filter(l => !setupData[l] || setupData[l] === 0);
+  const existingBanner = document.getElementById('missing-prs-banner');
+  if(existingBanner) existingBanner.remove();
+  if(missingPRs.length > 0) {
+    const banner = document.createElement('div');
+    banner.id = 'missing-prs-banner';
+    banner.style.cssText = 'margin:0 1.25rem 0.75rem;background:rgba(240,192,64,0.08);border:1px solid rgba(240,192,64,0.3);border-radius:var(--rs);padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px';
+    banner.innerHTML = `<span style="font-size:12px;color:var(--accent)">Enter your 1 Rep Max to auto-calculate training weights</span>
+      <button onclick="switchPage('prs')" style="font-size:12px;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:1px;text-transform:uppercase;border:1px solid var(--accent);background:transparent;color:var(--accent);border-radius:var(--rs);padding:5px 10px;cursor:pointer;white-space:nowrap">Set PRs</button>`;
+    scroll.before(banner);
+  }
+
   // Track which day to auto-open: first unsaved, or day 1
   let autoOpen = 1;
   for(let d=1;d<=DAYS;d++){ if(!getLog(currentWeek,d)?.saved){autoOpen=d;break;} }
@@ -2092,22 +2105,37 @@ function showPRPrompt(missing) {
   overlay.style.cssText = 'position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;padding:1.5rem;';
   const fields = MAIN_LIFTS.map(l => {
     const isMissing = !setupData[l] || setupData[l] === 0;
-    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
-      <span style="font-size:14px;font-weight:600;color:${LIFT_COLORS[l]}">${l}</span>
-      <div style="display:flex;align-items:center;gap:6px">
-        <input type="number" min="0" step="2.5" placeholder="0"
-          value="${setupData[l]||''}"
-          id="prprompt_${l.replace(/ /g,'_')}"
-          oninput="checkPRPromptReady()"
-          style="width:80px;padding:7px 10px;font-size:14px;text-align:center;border-radius:var(--rs);border:1px solid ${isMissing?'rgba(240,192,64,0.5)':'var(--border2)'};background:var(--surface2);color:var(--text);outline:none;"/>
-        <span style="font-size:12px;color:var(--muted)">${weightUnit()}</span>
+    const key = l.replace(/ /g,'_');
+    return `<div style="padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <span style="font-size:14px;font-weight:600;color:${LIFT_COLORS[l]}">${l}</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="pr-calc-toggle" onclick="togglePromptCalc('${key}')">Don't know?</button>
+          <input type="number" min="0" step="2.5" placeholder="0"
+            value="${setupData[l]||''}"
+            id="prprompt_${key}"
+            oninput="checkPRPromptReady()"
+            style="width:75px;padding:7px 8px;font-size:14px;text-align:center;border-radius:var(--rs);border:1px solid ${isMissing?'rgba(240,192,64,0.5)':'var(--border2)'};background:var(--surface2);color:var(--text);outline:none;"/>
+          <span style="font-size:12px;color:var(--muted)">${weightUnit()}</span>
+        </div>
+      </div>
+      <div class="pr-calc-box" id="promptcalc_${key}" style="margin-top:6px">
+        <div class="pr-calc-row">
+          <div class="pr-calc-field"><label>Weight (${weightUnit()})</label><input type="number" min="0" step="2.5" placeholder="0" id="pcw_${key}"/></div>
+          <div class="pr-calc-field"><label>Reps</label><input type="number" min="1" max="30" placeholder="0" id="pcr_${key}"/></div>
+          <button class="pr-calc-btn" onclick="calcPromptOneRM('${l}','${key}')">Calc</button>
+        </div>
+        <div class="pr-calc-result" id="pcres_${key}"></div>
       </div>
     </div>`;
   }).join('');
 
   overlay.innerHTML = `
-    <div style="background:var(--surface);border:1px solid var(--accent);border-radius:var(--r);padding:1.5rem;width:100%;max-width:380px;">
-      <div style="font-family:'Bebas Neue','Barlow Condensed',sans-serif;font-size:22px;letter-spacing:2px;color:var(--accent);margin-bottom:4px;">Enter Your 1 Rep Max</div>
+    <div style="background:var(--surface);border:1px solid var(--accent);border-radius:var(--r);padding:1.5rem;width:100%;max-width:380px;max-height:90vh;overflow-y:auto;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+        <div style="font-family:'Bebas Neue','Barlow Condensed',sans-serif;font-size:22px;letter-spacing:2px;color:var(--accent);">Enter Your 1 Rep Max</div>
+        <button onclick="closePRPrompt()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:0;line-height:1;margin-left:12px">×</button>
+      </div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:1.25rem;line-height:1.5">Your PRs are needed to calculate training weights. Enter your current 1RM for each lift.</div>
       ${fields}
       <button id="pr-prompt-save-btn" onclick="savePRPrompt()" disabled style="width:100%;margin-top:1.25rem;padding:12px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border-radius:var(--rs);border:1px solid var(--border2);background:var(--surface2);color:var(--muted2);cursor:not-allowed;transition:all 0.2s;">Save & Start Training</button>
@@ -2115,6 +2143,39 @@ function showPRPrompt(missing) {
   document.body.appendChild(overlay);
 }
 
+
+
+function togglePromptCalc(key) {
+  const box = document.getElementById('promptcalc_'+key);
+  if(box) box.classList.toggle('open');
+}
+
+function calcPromptOneRM(lift, key) {
+  const w = parseFloat(document.getElementById('pcw_'+key)?.value);
+  const r = parseFloat(document.getElementById('pcr_'+key)?.value);
+  if(!w || !r || r < 1) {
+    document.getElementById('pcres_'+key).innerHTML = '<span style="color:#ff6060">Enter weight and reps</span>';
+    return;
+  }
+  const oneRM = Math.round((w * (1 + r/30)) / 2.5) * 2.5;
+  document.getElementById('pcres_'+key).innerHTML =
+    `Est. 1RM: <strong>${oneRM} ${weightUnit()}</strong> &nbsp;·&nbsp; <button class="pr-calc-btn" style="padding:4px 10px;font-size:11px" onclick="applyPromptCalc('${lift}','${key}',${oneRM})">Use this</button>`;
+}
+
+function applyPromptCalc(lift, key, oneRM) {
+  const input = document.getElementById('prprompt_'+key);
+  if(input) { input.value = oneRM; checkPRPromptReady(); }
+  document.getElementById('promptcalc_'+key)?.classList.remove('open');
+  document.getElementById('pcres_'+key).innerHTML = '';
+}
+
+function closePRPrompt() {
+  document.getElementById('pr-prompt-overlay')?.remove();
+  // Show log with missing PRs banner
+  autoPopulateAllWeeks();
+  renderAll();
+  switchPage('log');
+}
 
 function checkPRPromptReady() {
   const allFilled = MAIN_LIFTS.every(l => {
