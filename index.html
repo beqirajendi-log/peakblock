@@ -1082,8 +1082,8 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
       <div class="setup-section-label">Weight</div>
       <div class="lift-setup-card" style="margin-bottom:1.25rem">
         <div class="unit-toggle-row">
-          <button class="unit-btn" id="unit-lbs" onclick="setUnit('weight','lbs')">lbs</button>
           <button class="unit-btn" id="unit-kg" onclick="setUnit('weight','kg')">kg</button>
+          <button class="unit-btn" id="unit-lbs" onclick="setUnit('weight','lbs')">lbs</button>
         </div>
       </div>
       <div class="setup-section-label">Distance</div>
@@ -1223,14 +1223,7 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
       <div class="setup-menu-item" onclick="goProfileScreen('profile-review')">
         <div class="setup-menu-left">
           <div class="setup-menu-title">Training Reports</div>
-          <div class="setup-menu-sub" id="profile-review-sub">Unlocks when cycle is complete</div>
-        </div>
-        <span class="setup-menu-chevron">›</span>
-      </div>
-      <div class="setup-menu-item" onclick="goProfileScreen('profile-history')">
-        <div class="setup-menu-left">
-          <div class="setup-menu-title">Cycle History</div>
-          <div class="setup-menu-sub" id="profile-history-sub">Past training cycles</div>
+          <div class="setup-menu-sub" id="profile-review-sub">Current cycle & past history</div>
         </div>
         <span class="setup-menu-chevron">›</span>
       </div>
@@ -1265,7 +1258,200 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
         </div>
         <div class="setup-row">
           <span class="setup-lift-name">Country</span>
-          <input id="acc-country" type="text" placeholder="—" style="width:140px;padding:7px 10px;font-size:14px;border-radius:var(--rs);border:1px solid var(--border2);background:var(--surface2);color:var(--text);outline:none;text-align:right" oninput="markAccountDirty()"/>
+          <select id="acc-country" style="width:160px;padding:7px 10px;font-size:14px;border-radius:var(--rs);border:1px solid var(--border2);background:var(--surface2);color:var(--text);outline:none;appearance:none" onchange="markAccountDirty()"><option value="">—</option><option value="Afghanistan">Afghanistan</option>
+<option value="Albania">Albania</option>
+<option value="Algeria">Algeria</option>
+<option value="Andorra">Andorra</option>
+<option value="Angola">Angola</option>
+<option value="Antigua and Barbuda">Antigua and Barbuda</option>
+<option value="Argentina">Argentina</option>
+<option value="Armenia">Armenia</option>
+<option value="Australia">Australia</option>
+<option value="Austria">Austria</option>
+<option value="Azerbaijan">Azerbaijan</option>
+<option value="Bahamas">Bahamas</option>
+<option value="Bahrain">Bahrain</option>
+<option value="Bangladesh">Bangladesh</option>
+<option value="Barbados">Barbados</option>
+<option value="Belarus">Belarus</option>
+<option value="Belgium">Belgium</option>
+<option value="Belize">Belize</option>
+<option value="Benin">Benin</option>
+<option value="Bhutan">Bhutan</option>
+<option value="Bolivia">Bolivia</option>
+<option value="Bosnia and Herzegovina">Bosnia and Herzegovina</option>
+<option value="Botswana">Botswana</option>
+<option value="Brazil">Brazil</option>
+<option value="Brunei">Brunei</option>
+<option value="Bulgaria">Bulgaria</option>
+<option value="Burkina Faso">Burkina Faso</option>
+<option value="Burundi">Burundi</option>
+<option value="Cabo Verde">Cabo Verde</option>
+<option value="Cambodia">Cambodia</option>
+<option value="Cameroon">Cameroon</option>
+<option value="Canada">Canada</option>
+<option value="Central African Republic">Central African Republic</option>
+<option value="Chad">Chad</option>
+<option value="Chile">Chile</option>
+<option value="China">China</option>
+<option value="Colombia">Colombia</option>
+<option value="Comoros">Comoros</option>
+<option value="Congo">Congo</option>
+<option value="Costa Rica">Costa Rica</option>
+<option value="Croatia">Croatia</option>
+<option value="Cuba">Cuba</option>
+<option value="Cyprus">Cyprus</option>
+<option value="Czech Republic">Czech Republic</option>
+<option value="Denmark">Denmark</option>
+<option value="Djibouti">Djibouti</option>
+<option value="Dominica">Dominica</option>
+<option value="Dominican Republic">Dominican Republic</option>
+<option value="Ecuador">Ecuador</option>
+<option value="Egypt">Egypt</option>
+<option value="El Salvador">El Salvador</option>
+<option value="Equatorial Guinea">Equatorial Guinea</option>
+<option value="Eritrea">Eritrea</option>
+<option value="Estonia">Estonia</option>
+<option value="Eswatini">Eswatini</option>
+<option value="Ethiopia">Ethiopia</option>
+<option value="Fiji">Fiji</option>
+<option value="Finland">Finland</option>
+<option value="France">France</option>
+<option value="Gabon">Gabon</option>
+<option value="Gambia">Gambia</option>
+<option value="Georgia">Georgia</option>
+<option value="Germany">Germany</option>
+<option value="Ghana">Ghana</option>
+<option value="Greece">Greece</option>
+<option value="Grenada">Grenada</option>
+<option value="Guatemala">Guatemala</option>
+<option value="Guinea">Guinea</option>
+<option value="Guinea-Bissau">Guinea-Bissau</option>
+<option value="Guyana">Guyana</option>
+<option value="Haiti">Haiti</option>
+<option value="Honduras">Honduras</option>
+<option value="Hungary">Hungary</option>
+<option value="Iceland">Iceland</option>
+<option value="India">India</option>
+<option value="Indonesia">Indonesia</option>
+<option value="Iran">Iran</option>
+<option value="Iraq">Iraq</option>
+<option value="Ireland">Ireland</option>
+<option value="Israel">Israel</option>
+<option value="Italy">Italy</option>
+<option value="Jamaica">Jamaica</option>
+<option value="Japan">Japan</option>
+<option value="Jordan">Jordan</option>
+<option value="Kazakhstan">Kazakhstan</option>
+<option value="Kenya">Kenya</option>
+<option value="Kiribati">Kiribati</option>
+<option value="Kuwait">Kuwait</option>
+<option value="Kyrgyzstan">Kyrgyzstan</option>
+<option value="Laos">Laos</option>
+<option value="Latvia">Latvia</option>
+<option value="Lebanon">Lebanon</option>
+<option value="Lesotho">Lesotho</option>
+<option value="Liberia">Liberia</option>
+<option value="Libya">Libya</option>
+<option value="Liechtenstein">Liechtenstein</option>
+<option value="Lithuania">Lithuania</option>
+<option value="Luxembourg">Luxembourg</option>
+<option value="Madagascar">Madagascar</option>
+<option value="Malawi">Malawi</option>
+<option value="Malaysia">Malaysia</option>
+<option value="Maldives">Maldives</option>
+<option value="Mali">Mali</option>
+<option value="Malta">Malta</option>
+<option value="Marshall Islands">Marshall Islands</option>
+<option value="Mauritania">Mauritania</option>
+<option value="Mauritius">Mauritius</option>
+<option value="Mexico">Mexico</option>
+<option value="Micronesia">Micronesia</option>
+<option value="Moldova">Moldova</option>
+<option value="Monaco">Monaco</option>
+<option value="Mongolia">Mongolia</option>
+<option value="Montenegro">Montenegro</option>
+<option value="Morocco">Morocco</option>
+<option value="Mozambique">Mozambique</option>
+<option value="Myanmar">Myanmar</option>
+<option value="Namibia">Namibia</option>
+<option value="Nauru">Nauru</option>
+<option value="Nepal">Nepal</option>
+<option value="Netherlands">Netherlands</option>
+<option value="New Zealand">New Zealand</option>
+<option value="Nicaragua">Nicaragua</option>
+<option value="Niger">Niger</option>
+<option value="Nigeria">Nigeria</option>
+<option value="North Korea">North Korea</option>
+<option value="North Macedonia">North Macedonia</option>
+<option value="Norway">Norway</option>
+<option value="Oman">Oman</option>
+<option value="Pakistan">Pakistan</option>
+<option value="Palau">Palau</option>
+<option value="Palestine">Palestine</option>
+<option value="Panama">Panama</option>
+<option value="Papua New Guinea">Papua New Guinea</option>
+<option value="Paraguay">Paraguay</option>
+<option value="Peru">Peru</option>
+<option value="Philippines">Philippines</option>
+<option value="Poland">Poland</option>
+<option value="Portugal">Portugal</option>
+<option value="Qatar">Qatar</option>
+<option value="Romania">Romania</option>
+<option value="Russia">Russia</option>
+<option value="Rwanda">Rwanda</option>
+<option value="Saint Kitts and Nevis">Saint Kitts and Nevis</option>
+<option value="Saint Lucia">Saint Lucia</option>
+<option value="Saint Vincent and the Grenadines">Saint Vincent and the Grenadines</option>
+<option value="Samoa">Samoa</option>
+<option value="San Marino">San Marino</option>
+<option value="Sao Tome and Principe">Sao Tome and Principe</option>
+<option value="Saudi Arabia">Saudi Arabia</option>
+<option value="Senegal">Senegal</option>
+<option value="Serbia">Serbia</option>
+<option value="Seychelles">Seychelles</option>
+<option value="Sierra Leone">Sierra Leone</option>
+<option value="Singapore">Singapore</option>
+<option value="Slovakia">Slovakia</option>
+<option value="Slovenia">Slovenia</option>
+<option value="Solomon Islands">Solomon Islands</option>
+<option value="Somalia">Somalia</option>
+<option value="South Africa">South Africa</option>
+<option value="South Korea">South Korea</option>
+<option value="South Sudan">South Sudan</option>
+<option value="Spain">Spain</option>
+<option value="Sri Lanka">Sri Lanka</option>
+<option value="Sudan">Sudan</option>
+<option value="Suriname">Suriname</option>
+<option value="Sweden">Sweden</option>
+<option value="Switzerland">Switzerland</option>
+<option value="Syria">Syria</option>
+<option value="Taiwan">Taiwan</option>
+<option value="Tajikistan">Tajikistan</option>
+<option value="Tanzania">Tanzania</option>
+<option value="Thailand">Thailand</option>
+<option value="Timor-Leste">Timor-Leste</option>
+<option value="Togo">Togo</option>
+<option value="Tonga">Tonga</option>
+<option value="Trinidad and Tobago">Trinidad and Tobago</option>
+<option value="Tunisia">Tunisia</option>
+<option value="Turkey">Turkey</option>
+<option value="Turkmenistan">Turkmenistan</option>
+<option value="Tuvalu">Tuvalu</option>
+<option value="Uganda">Uganda</option>
+<option value="Ukraine">Ukraine</option>
+<option value="United Arab Emirates">United Arab Emirates</option>
+<option value="United Kingdom">United Kingdom</option>
+<option value="United States">United States</option>
+<option value="Uruguay">Uruguay</option>
+<option value="Uzbekistan">Uzbekistan</option>
+<option value="Vanuatu">Vanuatu</option>
+<option value="Vatican City">Vatican City</option>
+<option value="Venezuela">Venezuela</option>
+<option value="Vietnam">Vietnam</option>
+<option value="Yemen">Yemen</option>
+<option value="Zambia">Zambia</option>
+<option value="Zimbabwe">Zimbabwe</option></select>
         </div>
       </div>
       <button id="acc-save-btn" onclick="saveAccount()" disabled
@@ -1292,8 +1478,8 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
       <div class="setup-section-label" style="margin-top:1.25rem">Weight</div>
       <div class="lift-setup-card" style="margin-bottom:1.25rem">
         <div class="unit-toggle-row">
-          <button class="unit-btn" id="unit-lbs" onclick="setUnit('weight','lbs')">lbs</button>
           <button class="unit-btn" id="unit-kg" onclick="setUnit('weight','kg')">kg</button>
+          <button class="unit-btn" id="unit-lbs" onclick="setUnit('weight','lbs')">lbs</button>
         </div>
       </div>
       <div class="setup-section-label">Distance</div>
@@ -1469,7 +1655,7 @@ function getActivePlan(){ return PROGRAMS[activePlan] || PROGRAMS["12week"]; }
 function syncPlanConstants(){ const p=getActivePlan(); TOTAL_WEEKS=p.weeks; DAYS=p.days; }
 let currentWeek=1;
 let logData=JSON.parse(localStorage.getItem('ll_log')||'{}');
-let appUnits=JSON.parse(localStorage.getItem('ll_units')||'{"weight":"lbs","distance":"km"}');
+let appUnits=JSON.parse(localStorage.getItem('ll_units')||'{"weight":"kg","distance":"km"}');
 let activePlan=localStorage.getItem('ll_active_plan')||'12week';
 let setupData=JSON.parse(localStorage.getItem('ll_setup')||'{}');
 // template: {day: {lift, accs:[{ex,s,r}]}}
@@ -1714,20 +1900,7 @@ function renderDays(anim){
         </div>
       </div>
       <div class="day-body">
-        <div class="section-label">Main lift</div>
-        <select class="main-lift-select" id="d${d}_lift" onchange="onLiftChange(${d})">
-          <option value="">— select lift —</option>
-          ${MAIN_LIFTS.map(l=>`<option value="${l}"${l===selLift?' selected':''}>${l}</option>`).join('')}
-        </select>
-        <div class="lift-color-bar" id="d${d}_colorbar" style="background:${liftColor}88"></div>
-        <div class="sets-header-row"><span></span><span>Sets</span><span>Reps</span><span>Load</span></div>
-        ${buildWarmupRows(d, saved, savedLoad, presc)}
-        ${buildWorkingRows(d, saved, savedSets, savedReps, savedLoad, presc)}
-        <div class="acc-divider"></div>
-        <div class="section-label">Accessories</div>
-        <div id="d${d}_accs">${accHTML}</div>
-        <button class="add-acc-btn" onclick="addAccItem(${d})">+ Add exercise</button>
-        <button class="save-day-btn${hasSave?' saved':''}" id="sb-${d}" onclick="saveDay(${d})">${hasSave?'✓ Saved':'Save day'}</button>
+        ${buildSessionView(d, selLift, presc, saved, hasSave, isSkipped)}
       </div>`;
     scroll.appendChild(card);
 
@@ -1940,47 +2113,43 @@ function renderPRs(){
   const cards = MAIN_LIFTS.map(l => {
     const key = l.replace(/ /g,'_');
     const currentPR = setupData[l] || 0;
-    // Get first ever entered PR from history or current
     const firstPR = parseFloat(localStorage.getItem('ll_first_pr_'+key) || '0');
     let pctBadge = '';
     if(firstPR > 0 && currentPR > 0) {
       const pct = Math.round(((currentPR - firstPR) / firstPR) * 100);
-      if(pct > 0) pctBadge = `<div class="pr-pct-badge up">+${pct}%</div>`;
-      else if(pct < 0) pctBadge = `<div class="pr-pct-badge down">${pct}%</div>`;
-      else pctBadge = `<div class="pr-pct-badge none">0%</div>`;
+      if(pct > 0) pctBadge = `<span class="pr-pct-badge up">+${pct}%</span>`;
+      else if(pct < 0) pctBadge = `<span class="pr-pct-badge down">${pct}%</span>`;
+      else pctBadge = `<span class="pr-pct-badge none">—</span>`;
     }
     return `<div class="pr-lift-card" id="pr-card-${key}">
       <div class="pr-lift-card-header" onclick="togglePRCard('${key}')">
         <div class="pr-lift-card-left">
           <div class="pr-lift-card-name" style="color:${LIFT_COLORS[l]}">${l}</div>
-          <div>
-            <span class="pr-lift-card-load">${currentPR || '—'}</span>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
+            <span class="pr-lift-card-load">${currentPR||'—'}</span>
             <span class="pr-lift-card-unit">${weightUnit()}</span>
+            ${pctBadge}
           </div>
         </div>
-        <div class="pr-lift-card-right">
-          ${pctBadge}
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
           <input class="pr-edit-input" type="number" min="0" step="2.5"
             value="${currentPR||''}" placeholder="0"
             id="pr_${key}"
             oninput="onPRInput('${l}', this.value)"
             onclick="event.stopPropagation()"/>
+          <button class="pr-calc-toggle" onclick="event.stopPropagation();toggleCalc('${key}')">Don't know?</button>
         </div>
       </div>
+      <div class="pr-calc-box" id="calc_${key}" style="padding:10px 16px">
+        <div class="pr-calc-row">
+          <div class="pr-calc-field"><label>Weight (${weightUnit()})</label><input type="number" min="0" step="2.5" placeholder="0" id="calcw_${key}"/></div>
+          <div class="pr-calc-field"><label>Reps</label><input type="number" min="1" max="30" placeholder="0" id="calcr_${key}"/></div>
+          <button class="pr-calc-btn" onclick="calcOneRM('${l}','${key}')">Calc</button>
+        </div>
+        <div class="pr-calc-result" id="calcres_${key}"></div>
+      </div>
       <div class="pr-lift-expand" id="pr-expand-${key}" style="display:none">
-        <div class="pr-chart-wrap">
-          <canvas id="pr-chart-${key}" height="100"></canvas>
-        </div>
-        <div id="pr-history-${key}"></div>
-        <div class="pr-calc-box open" style="margin-top:10px">
-          <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted2);margin-bottom:8px">Don't know your 1RM? Calculate it</div>
-          <div class="pr-calc-row">
-            <div class="pr-calc-field"><label>Weight (${weightUnit()})</label><input type="number" min="0" step="2.5" placeholder="0" id="calcw_${key}"/></div>
-            <div class="pr-calc-field"><label>Reps</label><input type="number" min="1" max="30" placeholder="0" id="calcr_${key}"/></div>
-            <button class="pr-calc-btn" onclick="calcOneRM('${l}','${key}')">Calc</button>
-          </div>
-          <div class="pr-calc-result" id="calcres_${key}"></div>
-        </div>
+        <div class="pr-chart-wrap"><canvas id="pr-chart-${key}" height="100"></canvas></div>
       </div>
     </div>`;
   }).join('');
@@ -1990,13 +2159,11 @@ function renderPRs(){
     Save 1 Rep Max
   </button>`;
 }
-
 function togglePRCard(key) {
   const expand = document.getElementById('pr-expand-'+key);
   const card = document.getElementById('pr-card-'+key);
   if(!expand) return;
   const isOpen = expand.style.display !== 'none';
-  // Close all
   MAIN_LIFTS.forEach(l => {
     const k = l.replace(/ /g,'_');
     const el = document.getElementById('pr-expand-'+k);
@@ -2024,15 +2191,7 @@ function renderPRChart(key) {
   });
   if(setupData[lift]) history.push({load: setupData[lift], label: 'Now'});
 
-  const histEl = document.getElementById('pr-history-'+key);
-  if(histEl) {
-    histEl.innerHTML = [...history].reverse().map(h =>
-      `<div class="pr-history-item">
-        <span class="pr-history-load">${h.load} ${weightUnit()}</span>
-        <span class="pr-history-date">${h.label}</span>
-      </div>`
-    ).join('');
-  }
+  // Chart only - no history list
 
   const canvas = document.getElementById('pr-chart-'+key);
   if(!canvas || history.length < 2) return;
@@ -2109,9 +2268,9 @@ function onPRInput(lift, val) {
 }
 
 function savePRs() {
-  // Read all PR inputs and save
   MAIN_LIFTS.forEach(l => {
     const key = l.replace(/ /g,'_');
+    // Store first PR ever
     if(!localStorage.getItem('ll_first_pr_'+key)) {
       const val = document.getElementById('pr_'+key)?.value;
       if(val && parseFloat(val)>0) localStorage.setItem('ll_first_pr_'+key, val);
@@ -2134,6 +2293,7 @@ function savePRs() {
     btn.textContent = 'Save 1 Rep Max';
   }
   showToast('PRs saved — weights updated');
+  renderPRs();
 }
 
 
@@ -2869,8 +3029,12 @@ function buildSessionView(d, lift, presc, saved, hasSave, isSkipped) {
 
   return `
     <div style="margin-bottom:4px">
-      <div class="section-label" style="margin-bottom:4px">${lift||'Main Lift'}</div>
-      <div class="lift-color-bar" style="background:${liftColor}88;margin-bottom:10px"></div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="width:3px;align-self:stretch;border-radius:2px;background:${liftColor};flex-shrink:0"></div>
+        <div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;letter-spacing:0.5px;color:${liftColor}">${lift||'—'}</div>
+        </div>
+      </div>
       <div class="session-sets">${setsHtml}</div>
     </div>
     ${accHtml}
@@ -3136,6 +3300,8 @@ function initProfilePage() {
   updatePlanBadges();
   updateUnitButtons();
   initTheme();
+  const savedPhoto = localStorage.getItem('ll_profile_photo');
+  if(savedPhoto) updateProfilePhoto(savedPhoto);
 
   // Reset to main screen
   goProfileScreen('profile-main');
@@ -3172,15 +3338,18 @@ function renderProfileReview() {
   if(!el) return;
   const completedWeeks = Array.from({length: TOTAL_WEEKS}, (_,i) => weekDone(i+1) === DAYS ? 1 : 0).reduce((a,b)=>a+b,0);
   const isComplete = completedWeeks === TOTAL_WEEKS;
-  el.innerHTML = '<div class="page-header" style="padding:0 0 1.25rem"><h2>Training Reports</h2></div>';
 
+  let html = '<div class="page-header" style="padding:0 0 1.25rem"><h2>Training Reports</h2></div>';
+
+  // Current cycle
+  html += '<div class="setup-section-label" style="margin-bottom:8px">Current Cycle</div>';
   if(!isComplete) {
-    el.innerHTML += `<div class="review-lock-card">
+    html += `<div class="review-lock-card" style="margin-bottom:1.25rem">
       <div class="review-lock-top">
         <div class="review-lock-icon">🔒</div>
         <div>
-          <div class="review-lock-title">Not Yet Complete</div>
-          <div class="review-lock-sub">Finish all ${TOTAL_WEEKS} weeks to unlock your Training Report.</div>
+          <div class="review-lock-title">In Progress</div>
+          <div class="review-lock-sub">Complete all ${TOTAL_WEEKS} weeks to unlock the full report.</div>
         </div>
       </div>
       <div class="review-lock-progress-label">
@@ -3189,11 +3358,39 @@ function renderProfileReview() {
       </div>
       <div class="review-lock-track"><div class="review-lock-fill" style="width:${(completedWeeks/TOTAL_WEEKS)*100}%"></div></div>
     </div>`;
-    return;
+  } else {
+    html += '<div id="current-report-inner"></div>';
   }
-  renderSetupReview();
-  const inner = document.getElementById('setup-review-inner');
-  if(inner) el.appendChild(inner);
+
+  // Past cycles
+  const archived = JSON.parse(localStorage.getItem('ll_archived') || '[]');
+  if(archived.length > 0) {
+    html += '<div class="setup-section-label" style="margin-top:1.25rem;margin-bottom:8px">Past Cycles</div>';
+    html += [...archived].reverse().map((c,i) => {
+      const date = new Date(c.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      const idx = archived.length - 1 - i;
+      const isCancelled = c.cancelled || false;
+      const cardStyle = isCancelled ? 'background:rgba(255,130,80,0.06);border-color:rgba(255,130,80,0.3);' : 'background:rgba(93,219,138,0.06);border-color:rgba(93,219,138,0.3);';
+      const badge = isCancelled
+        ? '<span style="font-size:10px;color:#ff8250;font-family:Barlow Condensed,sans-serif;letter-spacing:1px">CANCELLED</span>'
+        : '<span style="font-size:10px;color:#5ddb8a;font-family:Barlow Condensed,sans-serif;letter-spacing:1px">COMPLETED</span>';
+      return `<div class="setup-menu-item" onclick="viewProfileArchivedCycle(${idx})" style="${cardStyle}margin-bottom:8px">
+        <div class="setup-menu-left">
+          <div class="setup-menu-title">Cycle ${idx+1} ${badge}</div>
+          <div class="setup-menu-sub">${c.plan||'12-Week Periodization'} · ${date}</div>
+        </div><span class="setup-menu-chevron">›</span>
+      </div>`;
+    }).join('');
+  }
+
+  el.innerHTML = html;
+
+  if(isComplete) {
+    renderSetupReview();
+    const inner = document.getElementById('setup-review-inner');
+    const target = document.getElementById('current-report-inner');
+    if(inner && target) target.appendChild(inner);
+  }
 }
 
 function renderProfileHistory() {
@@ -3284,13 +3481,17 @@ function toggleTheme() {
   const isLight = document.body.classList.toggle('light');
   localStorage.setItem('ll_theme', isLight ? 'light' : 'dark');
   const tog = document.getElementById('theme-toggle');
-  if(tog) tog.classList.toggle('on', !isLight);
+  if(tog) tog.classList.toggle('on', !isLight); // ON = dark mode
 }
 function initTheme() {
   const saved = localStorage.getItem('ll_theme');
+  const tog = document.getElementById('theme-toggle');
   if (saved === 'light') {
     document.body.classList.add('light');
-    const tog = document.getElementById('theme-toggle');
+    if(tog) tog.classList.remove('on');
+  } else {
+    // Dark mode is default - toggle is ON
+    document.body.classList.remove('light');
     if(tog) tog.classList.add('on');
   }
 }
