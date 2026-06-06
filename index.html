@@ -1462,15 +1462,15 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
     <div id="profile-plans" class="setup-screen">
       <button class="setup-back-btn" onclick="goProfileScreen('profile-main')">‹ Back</button>
       <div class="page-header" style="padding:0 0 1.25rem"><h2>Available Training Plans</h2><p>Select your program</p></div>
-      <div class="plan-card" id="plan-12w-card" onclick="selectPlan('12week')" style="cursor:pointer">
+      <div class="plan-card" id="p-plan-12w-card" onclick="selectPlan('12week')" style="cursor:pointer">
         <div class="plan-card-header">
           <div>
             <div class="plan-card-title">12-Week Periodization</div>
             <div class="plan-card-sub">Accumulation → Intensification → Peak Strength</div>
           </div>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
-            <div id="plan-12w-badge" class="active-plan-badge" style="display:none">Active</div>
-            <div id="plan-12w-count" class="plan-completion-count"></div>
+            <div id="p-plan-12w-badge" class="active-plan-badge" style="display:none">Active</div>
+            <div id="p-plan-12w-count" class="plan-completion-count"></div>
           </div>
         </div>
         <div class="plan-card-phases">
@@ -1480,15 +1480,15 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
           <div class="plan-phase"><span style="color:#60a0ff">●</span> Weeks 4, 8, 12: Deload</div>
         </div>
       </div>
-      <div class="plan-card" id="plan-531-card" onclick="selectPlan('531')" style="cursor:pointer">
+      <div class="plan-card" id="p-plan-531-card" onclick="selectPlan('531')" style="cursor:pointer">
         <div class="plan-card-header">
           <div>
             <div class="plan-card-title">5/3/1 Wendler</div>
             <div class="plan-card-sub">Proven long-term strength program</div>
           </div>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
-            <div id="plan-531-badge" class="active-plan-badge" style="display:none">Active</div>
-            <div id="plan-531-count" class="plan-completion-count"></div>
+            <div id="p-plan-531-badge" class="active-plan-badge" style="display:none">Active</div>
+            <div id="p-plan-531-count" class="plan-completion-count"></div>
           </div>
         </div>
         <div class="plan-card-phases">
@@ -2903,34 +2903,20 @@ function updateLogPlanName() {
 }
 
 function updatePlanBadges() {
-  const badge12 = document.getElementById('plan-12w-badge');
-  const badge531 = document.getElementById('plan-531-badge');
-  const card12 = document.getElementById('plan-12w-card');
-  const card531 = document.getElementById('plan-531-card');
-
-  // Show/hide active badges
-  if(badge12) badge12.style.display = activePlan==='12week' ? 'inline-block' : 'none';
-  if(badge531) badge531.style.display = activePlan==='531' ? 'inline-block' : 'none';
-
-  // Active card gets green tint, others neutral
-  if(card12) { card12.classList.toggle('active-plan', activePlan==='12week'); card12.style.opacity='1'; }
-  if(card531) { card531.classList.toggle('active-plan', activePlan==='531'); card531.style.opacity='1'; }
-
-  // Completion counts from archived cycles
   const archived = JSON.parse(localStorage.getItem('ll_archived') || '[]');
   const count12 = archived.filter(c => (c.plan==='12-Week Periodization'||!c.plan) && !c.cancelled).length;
   const count531 = archived.filter(c => c.plan==='5/3/1 Wendler' && !c.cancelled).length;
 
-  const cnt12El = document.getElementById('plan-12w-count');
-  const cnt531El = document.getElementById('plan-531-count');
-  if(cnt12El) {
-    cnt12El.textContent = count12 > 0 ? count12 + '× completed' : '';
-    cnt12El.className = 'plan-completion-count' + (count12>0?' has-count':'');
-  }
-  if(cnt531El) {
-    cnt531El.textContent = count531 > 0 ? count531 + '× completed' : '';
-    cnt531El.className = 'plan-completion-count' + (count531>0?' has-count':'');
-  }
+  // Update all card IDs (both old setup page and profile page)
+  [['plan-12w','12week'], ['p-plan-12w','12week'], ['plan-531','531'], ['p-plan-531','531']].forEach(([prefix, plan]) => {
+    const badge = document.getElementById(prefix+'-badge');
+    const card = document.getElementById(prefix+'-card');
+    const count = document.getElementById(prefix+'-count');
+    const cnt = plan==='12week' ? count12 : count531;
+    if(badge) badge.style.display = activePlan===plan ? 'inline-block' : 'none';
+    if(card) { card.classList.toggle('active-plan', activePlan===plan); card.style.opacity='1'; }
+    if(count) { count.textContent = cnt>0?cnt+'× completed':''; count.className='plan-completion-count'+(cnt>0?' has-count':''); }
+  });
 
   const sub = document.getElementById('training-plan-sub');
   if(sub) sub.textContent = (activePlan==='531'?'5/3/1 Wendler':'12-Week Periodization') + ' · Active';
@@ -3215,6 +3201,7 @@ function goProfileScreen(id) {
   document.getElementById(id)?.classList.add('active');
   if(id === 'profile-review') renderProfileReview();
   if(id === 'profile-history') renderProfileHistory();
+  if(id === 'profile-plans') updatePlanBadges();
 }
 
 function initProfilePage() {
