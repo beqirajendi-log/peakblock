@@ -1548,7 +1548,7 @@ function saveDay(d){
   }:null;
   const accs=collectAccs(d);
   // Check PR BEFORE saving so current entry isn't included in previous bests
-  const prOneRM = checkPR(lift, parseFloat(load), parseFloat(reps), parseFloat(sets));
+  const prOneRM = checkPR(lift, parseFloat(load));
   const worksets531 = activePlan==='531' ? {
     workset1: {sets:document.getElementById(`d${d}_ws1_sets`)?.value||'1', reps:document.getElementById(`d${d}_ws1_reps`)?.value||'5', load:document.getElementById(`d${d}_ws1_load`)?.value||'0'},
     workset2: {sets:document.getElementById(`d${d}_ws2_sets`)?.value||'1', reps:document.getElementById(`d${d}_ws2_reps`)?.value||'3', load:document.getElementById(`d${d}_ws2_load`)?.value||'0'},
@@ -1588,7 +1588,7 @@ function saveDay(d){
   }
 
   if(prOneRM) {
-    showPRCelebration(lift, prOneRM, parseFloat(load));
+    showPRCelebration(lift, prOneRM);
   } else {
     showToast(`Day ${d} saved`);
   }
@@ -2636,22 +2636,25 @@ function updateProgressBar() {
 }
 
 // PR CELEBRATION
-function checkPR(lift, load, reps, sets) {
-  const bests = {};
+function checkPR(lift, load) {
+  // Compare actual load against best logged load for this lift
+  let bestLoad = 0;
   for(let w=1;w<=TOTAL_WEEKS;w++) for(let d=1;d<=DAYS;d++) {
     const e = getLog(w,d);
-    if(!e?.saved || !e.lift) continue;
-    const oneRM = Math.round(e.load * (1 + e.reps/30));
-    if(!bests[e.lift] || oneRM > bests[e.lift]) bests[e.lift] = oneRM;
+    if(!e?.saved || e.lift !== lift) continue;
+    if(e.load > bestLoad) bestLoad = e.load;
   }
-  const newOneRM = Math.round(load * (1 + reps/30));
-  const prevBest = bests[lift] || 0;
-  return newOneRM > prevBest ? newOneRM : null;
+  return load > bestLoad ? load : null;
 }
 
-function showPRCelebration(lift, oneRM, load) {
+function showPRCelebration(lift, load) {
   document.getElementById('pr-lift-name').textContent = lift;
   document.getElementById('pr-subtitle').textContent = `${load} ${weightUnit()}`;
+  // Update PR in setupData
+  if(load > (setupData[lift] || 0)) {
+    setupData[lift] = load;
+    localStorage.setItem('ll_setup', JSON.stringify(setupData));
+  }
   const cel = document.getElementById('pr-celebration');
   cel.classList.add('show');
   launchConfetti();
