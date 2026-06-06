@@ -1188,11 +1188,13 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
 
     <!-- PROFILE HEADER -->
     <div class="profile-header">
-      <div class="profile-avatar" id="profile-avatar-display">
+      <div class="profile-avatar" id="profile-avatar-display" onclick="document.getElementById('profile-photo-input').click()" style="cursor:pointer;position:relative;overflow:visible">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40">
           <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
         </svg>
+        <div style="position:absolute;bottom:-4px;right:-4px;width:22px;height:22px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;z-index:1">📷</div>
       </div>
+      <input type="file" id="profile-photo-input" accept="image/*" style="display:none" onchange="handleProfilePhoto(event)"/>
       <div class="profile-name" id="profile-display-name">Your Name</div>
       <div class="profile-email" id="profile-display-email"></div>
     </div>
@@ -1342,6 +1344,7 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
 <option value="Jamaica">Jamaica</option>
 <option value="Japan">Japan</option>
 <option value="Jordan">Jordan</option>
+<option value="Kosovo">Kosovo</option>
 <option value="Kazakhstan">Kazakhstan</option>
 <option value="Kenya">Kenya</option>
 <option value="Kiribati">Kiribati</option>
@@ -1464,29 +1467,34 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
     <div id="profile-settings" class="setup-screen">
       <button class="setup-back-btn" onclick="goProfileScreen('profile-main')">‹ Back</button>
       <div class="page-header" style="padding:0 0 1.25rem"><h2>Settings</h2></div>
-      <div class="lift-setup-card">
-        <div class="settings-row">
-          <div class="settings-row-left">
-            <div class="settings-row-title">Dark mode</div>
-            <div class="settings-row-sub">Switch between dark and light theme</div>
-          </div>
-          <div class="toggle-switch" id="theme-toggle" onclick="toggleTheme()">
-            <div class="toggle-knob"></div>
-          </div>
+
+      <!-- Dark Mode -->
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:14px;color:var(--text)">Dark Mode</span>
+        <div class="toggle-switch" id="p-theme-toggle" onclick="toggleTheme()">
+          <div class="toggle-knob"></div>
         </div>
       </div>
-      <div class="setup-section-label" style="margin-top:1.25rem">Weight</div>
-      <div class="lift-setup-card" style="margin-bottom:1.25rem">
-        <div class="unit-toggle-row">
-          <button class="unit-btn" id="unit-kg" onclick="setUnit('weight','kg')">kg</button>
-          <button class="unit-btn" id="unit-lbs" onclick="setUnit('weight','lbs')">lbs</button>
+
+      <!-- Weight -->
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:14px;color:var(--text)">Weight</span>
+        <div style="display:flex;gap:6px">
+          <button id="p-unit-lbs" onclick="setUnit('weight','lbs')"
+            style="padding:5px 14px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s">lbs</button>
+          <button id="p-unit-kg" onclick="setUnit('weight','kg')"
+            style="padding:5px 14px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s">kg</button>
         </div>
       </div>
-      <div class="setup-section-label">Distance</div>
-      <div class="lift-setup-card">
-        <div class="unit-toggle-row">
-          <button class="unit-btn" id="unit-km" onclick="setUnit('distance','km')">km</button>
-          <button class="unit-btn" id="unit-mi" onclick="setUnit('distance','mi')">mi</button>
+
+      <!-- Distance -->
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0">
+        <span style="font-size:14px;color:var(--text)">Distance</span>
+        <div style="display:flex;gap:6px">
+          <button id="p-unit-mi" onclick="setUnit('distance','mi')"
+            style="padding:5px 14px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s">mi</button>
+          <button id="p-unit-km" onclick="setUnit('distance','km')"
+            style="padding:5px 14px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s">km</button>
         </div>
       </div>
     </div>
@@ -1655,7 +1663,7 @@ function getActivePlan(){ return PROGRAMS[activePlan] || PROGRAMS["12week"]; }
 function syncPlanConstants(){ const p=getActivePlan(); TOTAL_WEEKS=p.weeks; DAYS=p.days; }
 let currentWeek=1;
 let logData=JSON.parse(localStorage.getItem('ll_log')||'{}');
-let appUnits=JSON.parse(localStorage.getItem('ll_units')||'{"weight":"kg","distance":"km"}');
+let appUnits=JSON.parse(localStorage.getItem('ll_units')||'{"weight":"lbs","distance":"mi"}');
 let activePlan=localStorage.getItem('ll_active_plan')||'12week';
 let setupData=JSON.parse(localStorage.getItem('ll_setup')||'{}');
 // template: {day: {lift, accs:[{ex,s,r}]}}
@@ -2308,15 +2316,25 @@ function setUnit(type, val) {
 }
 
 function updateUnitButtons() {
-  const btns = {
-    'lbs': document.getElementById('unit-lbs'),
-    'kg': document.getElementById('unit-kg'),
-    'km': document.getElementById('unit-km'),
-    'mi': document.getElementById('unit-mi'),
-  };
-  Object.keys(btns).forEach(k => { if(btns[k]) btns[k].classList.remove('active'); });
-  if(btns[appUnits.weight]) btns[appUnits.weight].classList.add('active');
-  if(btns[appUnits.distance]) btns[appUnits.distance].classList.add('active');
+  // Old setup page buttons
+  ['lbs','kg','km','mi'].forEach(k => {
+    const el = document.getElementById('unit-'+k);
+    if(el) el.classList.remove('active');
+  });
+  const wEl = document.getElementById('unit-'+appUnits.weight);
+  const dEl = document.getElementById('unit-'+appUnits.distance);
+  if(wEl) wEl.classList.add('active');
+  if(dEl) dEl.classList.add('active');
+
+  // New profile settings buttons - use inline style for gold tint
+  ['lbs','kg','mi','km'].forEach(k => {
+    const el = document.getElementById('p-unit-'+k);
+    if(!el) return;
+    const isActive = (k === appUnits.weight || k === appUnits.distance);
+    el.style.borderColor = isActive ? 'var(--accent)' : 'var(--border2)';
+    el.style.color = isActive ? 'var(--accent)' : 'var(--muted)';
+    el.style.background = isActive ? 'var(--accent2)' : 'transparent';
+  });
 }
 
 function updateUnitsSubLabel() {
@@ -3301,7 +3319,7 @@ function initProfilePage() {
   updateUnitButtons();
   initTheme();
   const savedPhoto = localStorage.getItem('ll_profile_photo');
-  if(savedPhoto) updateProfilePhoto(savedPhoto);
+  if(savedPhoto) applyProfilePhoto(savedPhoto);
 
   // Reset to main screen
   goProfileScreen('profile-main');
@@ -3480,20 +3498,21 @@ function resetSaveBtn(d) {
 function toggleTheme() {
   const isLight = document.body.classList.toggle('light');
   localStorage.setItem('ll_theme', isLight ? 'light' : 'dark');
-  const tog = document.getElementById('theme-toggle');
-  if(tog) tog.classList.toggle('on', !isLight); // ON = dark mode
+  // Update both possible toggle IDs
+  ['theme-toggle','p-theme-toggle'].forEach(id => {
+    const tog = document.getElementById(id);
+    if(tog) tog.classList.toggle('on', !isLight);
+  });
 }
 function initTheme() {
   const saved = localStorage.getItem('ll_theme');
-  const tog = document.getElementById('theme-toggle');
-  if (saved === 'light') {
-    document.body.classList.add('light');
-    if(tog) tog.classList.remove('on');
-  } else {
-    // Dark mode is default - toggle is ON
-    document.body.classList.remove('light');
-    if(tog) tog.classList.add('on');
-  }
+  const isDark = saved !== 'light';
+  if(!isDark) document.body.classList.add('light');
+  else document.body.classList.remove('light');
+  ['theme-toggle','p-theme-toggle'].forEach(id => {
+    const tog = document.getElementById(id);
+    if(tog) tog.classList.toggle('on', isDark);
+  });
 }
 
 // CYCLE PROGRESS BAR
