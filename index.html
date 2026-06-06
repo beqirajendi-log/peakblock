@@ -1192,7 +1192,6 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40">
           <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
         </svg>
-        <div style="position:absolute;bottom:-4px;right:-4px;width:22px;height:22px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;z-index:1">📷</div>
       </div>
       <input type="file" id="profile-photo-input" accept="image/*" style="display:none" onchange="handleProfilePhoto(event)"/>
       <div class="profile-name" id="profile-display-name">Your Name</div>
@@ -1823,6 +1822,11 @@ function renderDays(anim){
   if(anim){scroll.classList.remove('slide-left','slide-right');void scroll.offsetWidth;scroll.classList.add('slide-'+anim);}
   scroll.innerHTML='';
 
+  // Force populate if plan is set but days are empty
+  if(activePlan && PROGRAMS[activePlan]) {
+    const hasAnyEntry = Object.keys(logData).length > 0;
+    if(!hasAnyEntry) autoPopulateAllWeeks();
+  }
   // No plan selected — show empty state, hide week nav etc
   if(!activePlan || !PROGRAMS[activePlan]) {
     document.querySelector('.week-nav-wrap').style.display = 'none';
@@ -1929,7 +1933,9 @@ function skipDay(d) {
     setLog(currentWeek, d, {...existing, skipped: false});
     renderAll();
   } else {
-    setLog(currentWeek, d, {lift:'', sets:'', reps:'', load:'', accs:[], saved:false, skipped:true, ts:Date.now()});
+    // Preserve existing prefilled data, just mark as skipped
+    const prefill = getActivePlan().dayLifts[d-1] ? getLog(currentWeek,d) : {};
+    setLog(currentWeek, d, {...(prefill||{}), skipped:true, saved:false, ts:Date.now()});
     renderAll();
     // Auto-advance to next unsaved, non-skipped day
     const nextDay = [1,2,3,4].find(i => i > d && !getLog(currentWeek,i)?.saved && !getLog(currentWeek,i)?.skipped);
@@ -2312,7 +2318,9 @@ function setUnit(type, val) {
   localStorage.setItem('ll_units', JSON.stringify(appUnits));
   updateUnitButtons();
   updateUnitsSubLabel();
-  renderDays(); // refresh load placeholder
+  renderDays();
+  // Re-render PRs if visible
+  if(document.getElementById('page-prs')?.classList.contains('active')) renderPRs();
 }
 
 function updateUnitButtons() {
@@ -3354,27 +3362,37 @@ function saveAccount() {
 function renderProfileReview() {
   const el = document.getElementById('profile-review-content');
   if(!el) return;
-  const completedWeeks = Array.from({length: TOTAL_WEEKS}, (_,i) => weekDone(i+1) === DAYS ? 1 : 0).reduce((a,b)=>a+b,0);
-  const isComplete = completedWeeks === TOTAL_WEEKS;
+
+  const hasPlan = activePlan && PROGRAMS[activePlan];
+  const completedWeeks = hasPlan ? Array.from({length: TOTAL_WEEKS}, (_,i) => weekDone(i+1) === DAYS ? 1 : 0).reduce((a,b)=>a+b,0) : 0;
+  const totalDaysLogged = hasPlan ? Object.values(logData).filter(d => d.saved).length : 0;
+  const isComplete = hasPlan && completedWeeks === TOTAL_WEEKS;
 
   let html = '<div class="page-header" style="padding:0 0 1.25rem"><h2>Training Reports</h2></div>';
 
   // Current cycle
   html += '<div class="setup-section-label" style="margin-bottom:8px">Current Cycle</div>';
-  if(!isComplete) {
+
+  if(!hasPlan) {
+    html += `<div style="padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-bottom:1.25rem">
+      <div style="font-size:13px;color:var(--muted);line-height:1.6">You haven't started a training program yet. Select a program to begin tracking your progress.</div>
+      <button onclick="goProfileScreen('profile-plans')" style="margin-top:10px;padding:8px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border-radius:var(--rs);border:1px solid var(--accent);background:var(--accent2);color:var(--accent);cursor:pointer">Choose a Program</button>
+    </div>`;
+  } else if(!isComplete) {
+    const pct = Math.round((completedWeeks/TOTAL_WEEKS)*100);
     html += `<div class="review-lock-card" style="margin-bottom:1.25rem">
       <div class="review-lock-top">
-        <div class="review-lock-icon">🔒</div>
+        <div class="review-lock-icon">🏋️</div>
         <div>
           <div class="review-lock-title">In Progress</div>
-          <div class="review-lock-sub">Complete all ${TOTAL_WEEKS} weeks to unlock the full report.</div>
+          <div class="review-lock-sub">${getActivePlan().name} · ${totalDaysLogged} day${totalDaysLogged!==1?'s':''} logged</div>
         </div>
       </div>
       <div class="review-lock-progress-label">
-        <span>${completedWeeks} of ${TOTAL_WEEKS} weeks complete</span>
-        <span style="color:var(--accent)">${Math.round((completedWeeks/TOTAL_WEEKS)*100)}%</span>
+        <span>Week ${completedWeeks+1} of ${TOTAL_WEEKS}</span>
+        <span style="color:var(--accent)">${pct}%</span>
       </div>
-      <div class="review-lock-track"><div class="review-lock-fill" style="width:${(completedWeeks/TOTAL_WEEKS)*100}%"></div></div>
+      <div class="review-lock-track"><div class="review-lock-fill" style="width:${pct}%"></div></div>
     </div>`;
   } else {
     html += '<div id="current-report-inner"></div>';
