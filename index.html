@@ -493,7 +493,7 @@ canvas.sparkline { width: 100% !important; height: 40px !important; }
 }
 .pr-edit-input:focus { border-color: var(--accent); }
 .pr-lift-expand { padding: 0 16px 16px; border-top: 1px solid var(--border); }
-.pr-chart-wrap { height: 100px; margin-bottom: 12px; margin-top: 12px; }
+.pr-chart-wrap { height: 160px; margin-bottom: 8px; margin-top: 12px; }
 .pr-history-item {
   display: flex; justify-content: space-between; align-items: center;
   padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px;
@@ -1654,6 +1654,9 @@ function getPrescription(week, lift) {
 
 function init(){
   syncPlanConstants();
+  // Force re-migration if version is old
+  if(!localStorage.getItem("ll_pr_migration_v2")) { MAIN_LIFTS.forEach(l => localStorage.removeItem("ll_pr_history_"+l.replace(/ /g,"_"))); localStorage.setItem("ll_pr_migration_v2","1"); }
+  migratePRHistory();
   initOnboarding();
   for(let w=TOTAL_WEEKS;w>=1;w--){if(weekDone(w)>0){currentWeek=w;break;}}
   initTheme();
@@ -2153,57 +2156,113 @@ function togglePRCard(key) {
 function renderPRChart(key) {
   const lift = MAIN_LIFTS.find(l => l.replace(/ /g,'_') === key);
   if(!lift) return;
-  // Collect PR history from archived cycles + current
-  const archived = JSON.parse(localStorage.getItem('ll_archived') || '[]');
-  const history = [];
-  archived.forEach((c, i) => {
-    if(c.setup && c.setup[lift]) {
-      history.push({load: c.setup[lift], label: 'Cycle '+(i+1)});
-    }
-  });
-  if(setupData[lift]) history.push({load: setupData[lift], label: 'Now'});
 
-  // Chart only - no history list
+  const prHistory = JSON.parse(localStorage.getItem('ll_pr_history_'+key) || '[]');
+  if(prHistory.length === 0 && setupData[lift]) {
+    prHistory.push({load: setupData[lift], date: Date.now()});
+  }
+  if(prHistory.length === 0) return;
 
   const canvas = document.getElementById('pr-chart-'+key);
-  if(!canvas || history.length < 2) return;
-  const ctx = canvas.getContext('2d');
-  canvas.width = canvas.offsetWidth * (window.devicePixelRatio||1);
-  canvas.height = 100 * (window.devicePixelRatio||1);
-  ctx.scale(window.devicePixelRatio||1, window.devicePixelRatio||1);
-  const w = canvas.offsetWidth, h = 100;
-  const vals = history.map(h => h.load);
-  const min = Math.min(...vals) * 0.95, max = Math.max(...vals) * 1.02;
-  const step = w / (vals.length - 1);
-  ctx.clearRect(0,0,w,h);
-  // Fill
-  ctx.beginPath();
-  vals.forEach((v,i) => {
-    const x = i*step, y = h - ((v-min)/(max-min))*(h-16)-8;
-    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
-  });
-  ctx.lineTo((vals.length-1)*step,h); ctx.lineTo(0,h); ctx.closePath();
-  ctx.fillStyle = LIFT_COLORS[lift]+'22'; ctx.fill();
-  // Line
-  ctx.beginPath();
-  ctx.strokeStyle = LIFT_COLORS[lift]; ctx.lineWidth=2; ctx.lineJoin='round';
-  vals.forEach((v,i) => {
-    const x=i*step, y=h-((v-min)/(max-min))*(h-16)-8;
-    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
-  });
-  ctx.stroke();
-  // Dots
-  vals.forEach((v,i) => {
-    const x=i*step, y=h-((v-min)/(max-min))*(h-16)-8;
-    ctx.beginPath(); ctx.arc(x,y,3,0,Math.PI*2);
-    ctx.fillStyle=LIFT_COLORS[lift]; ctx.fill();
-  });
-  // Labels
-  ctx.fillStyle='#7a7b85'; ctx.font='9px Barlow Condensed,sans-serif';
-  history.forEach((h,i) => {
-    ctx.fillText(h.label, i*step - (i===history.length-1?18:0), 98);
-  });
+  if(!canvas) return;
+
+  setTimeout(() => {
+    const dpr = window.devicePixelRatio || 1;
+    const W = canvas.parentElement?.clientWidth || 300;
+    const H = 160;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+
+    const PAD = {top: 36, bottom: 28, left: 10, right: 10};
+    const cw = W - PAD.left - PAD.right;
+    const ch = H - PAD.top - PAD.bottom;
+    const color = LIFT_COLORS[lift];
+
+    const vals = prHistory.map(p => p.load);
+    const dates = prHistory.map(p => new Date(p.date).toLocaleDateString('en-US',{month:'short',day:'numeric'}));
+    const isSingle = vals.length === 1;
+
+    const minVal = Math.min(...vals);
+    const maxVal = Math.max(...vals);
+    const spread = (maxVal - minVal) || maxVal * 0.2;
+    const lo = minVal - spread * 0.25;
+    const hi = maxVal + spread * 0.35;
+    const rng = hi - lo;
+
+    const gx = i => isSingle ? PAD.left + cw/2 : PAD.left + (i/(vals.length-1))*cw;
+    const gy = v => PAD.top + ch - ((v-lo)/rng)*ch;
+
+    ctx.clearRect(0,0,W,H);
+
+    if(!isSingle) {
+      // Gradient fill
+      const grad = ctx.createLinearGradient(0, PAD.top, 0, H-PAD.bottom);
+      grad.addColorStop(0, color+'55');
+      grad.addColorStop(1, color+'05');
+      ctx.beginPath();
+      vals.forEach((v,i) => {
+        const x=gx(i), y=gy(v);
+        if(i===0){ctx.moveTo(x,y);return;}
+        const px=gx(i-1), py=gy(vals[i-1]), cx=(px+x)/2;
+        ctx.bezierCurveTo(cx,py,cx,y,x,y);
+      });
+      ctx.lineTo(gx(vals.length-1),H-PAD.bottom);
+      ctx.lineTo(gx(0),H-PAD.bottom);
+      ctx.closePath();
+      ctx.fillStyle=grad; ctx.fill();
+
+      // Line
+      ctx.beginPath();
+      ctx.strokeStyle=color; ctx.lineWidth=3; ctx.lineJoin='round'; ctx.lineCap='round';
+      vals.forEach((v,i)=>{
+        const x=gx(i),y=gy(v);
+        if(i===0){ctx.moveTo(x,y);return;}
+        const px=gx(i-1),py=gy(vals[i-1]),cx=(px+x)/2;
+        ctx.bezierCurveTo(cx,py,cx,y,x,y);
+      });
+      ctx.stroke();
+    }
+
+    // All dots, labels and dates
+    vals.forEach((v,i)=>{
+      const x=gx(i), y=gy(v);
+
+      // Glow
+      ctx.beginPath(); ctx.arc(x,y,9,0,Math.PI*2);
+      ctx.fillStyle=color+'22'; ctx.fill();
+      // Dot
+      ctx.beginPath(); ctx.arc(x,y,5,0,Math.PI*2);
+      ctx.fillStyle=color; ctx.fill();
+      // Center
+      ctx.beginPath(); ctx.arc(x,y,2,0,Math.PI*2);
+      ctx.fillStyle='#fff'; ctx.fill();
+
+      // Value pill - nudge to stay within bounds
+      const label = v+' '+weightUnit();
+      ctx.font='bold 11px Barlow Condensed,sans-serif';
+      const tw=ctx.measureText(label).width;
+      const lx=Math.max(PAD.left+tw/2+6, Math.min(W-PAD.right-tw/2-6, x));
+      const ly=Math.max(18, y-16);
+      ctx.beginPath();
+      ctx.roundRect(lx-tw/2-6, ly-13, tw+12, 17, 8);
+      ctx.fillStyle=color+'dd'; ctx.fill();
+      ctx.fillStyle='#111'; ctx.textAlign='center';
+      ctx.fillText(label, lx, ly);
+
+      // Date below each dot
+      ctx.font='10px Barlow Condensed,sans-serif'; ctx.fillStyle='#666';
+      const dateAlign = i===0 ? 'left' : (i===vals.length-1 ? 'right' : 'center');
+      ctx.textAlign=dateAlign;
+      const dx = i===0 ? Math.max(PAD.left, x) : (i===vals.length-1 ? Math.min(W-PAD.right, x) : x);
+      ctx.fillText(dates[i], dx, H-6);
+    });
+  }, 80);
 }
+
 function toggleCalc(key) {
   const box = document.getElementById('calc_'+key);
   if(box) box.classList.toggle('open');
@@ -2249,9 +2308,18 @@ function savePRs() {
     }
   });
   MAIN_LIFTS.forEach(l => {
-    const val = document.getElementById('pr_'+l.replace(/ /g,'_'))?.value;
-    if(val && parseFloat(val) > 0) setupData[l] = parseFloat(val);
-    else delete setupData[l];
+    const key = l.replace(/ /g,'_');
+    const val = document.getElementById('pr_'+key)?.value;
+    if(val && parseFloat(val) > 0) {
+      const prev = setupData[l];
+      setupData[l] = parseFloat(val);
+      // Store PR history with dates
+      if(parseFloat(val) !== prev) {
+        const prHistory = JSON.parse(localStorage.getItem('ll_pr_history_'+key) || '[]');
+        prHistory.push({load: parseFloat(val), date: Date.now()});
+        localStorage.setItem('ll_pr_history_'+key, JSON.stringify(prHistory));
+      }
+    } else delete setupData[l];
   });
   localStorage.setItem('ll_setup', JSON.stringify(setupData));
   // Repopulate all weeks with new weights
@@ -3242,7 +3310,7 @@ function initProfilePage() {
   updateUnitButtons();
   initTheme();
   const savedPhoto = localStorage.getItem('ll_profile_photo');
-  if(savedPhoto) applyProfilePhoto(savedPhoto);
+  if(savedPhoto) { applyProfilePhoto(savedPhoto); }
 
   // Reset to main screen
   goProfileScreen('profile-main');
@@ -3285,7 +3353,10 @@ function renderProfileReview() {
 
   const cycleStart = localStorage.getItem('ll_cycle_start');
   const cycleEnd = localStorage.getItem('ll_cycle_end');
-  const dateRange = formatDateRange(cycleStart ? parseInt(cycleStart) : null, cycleEnd ? parseInt(cycleEnd) : null);
+  let dateRange = '';
+  if(cycleStart) {
+    dateRange = formatDateRange(parseInt(cycleStart), cycleEnd ? parseInt(cycleEnd) : null);
+  }
   let html = `<div class="page-header" style="padding:0 0 1.25rem"><h2>Training Reports</h2>${dateRange ? '<p style="font-size:12px;color:var(--muted)">'+dateRange+'</p>' : ''}</div>`;
 
   // Current cycle
@@ -3461,9 +3532,9 @@ function formatDateRange(startTs, endTs) {
   if(!startTs) return '';
   const opts = {month:'short', day:'numeric', year:'numeric'};
   const start = new Date(startTs).toLocaleDateString('en-US', opts);
-  if(!endTs) return start + ' – present';
+  if(!endTs) return start + ' — present';
   const end = new Date(endTs).toLocaleDateString('en-US', opts);
-  return start + ' – ' + end;
+  return start + ' — ' + end;
 }
 
 function getCycleDuration(startTs, endTs) {
@@ -3471,6 +3542,56 @@ function getCycleDuration(startTs, endTs) {
   const days = Math.round((endTs - startTs) / (1000*60*60*24));
   const weeks = Math.round(days / 7);
   return weeks + ' week' + (weeks !== 1 ? 's' : '');
+}
+
+
+function handleProfilePhoto(e) {
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const url = ev.target.result;
+    localStorage.setItem('ll_profile_photo', url);
+    applyProfilePhoto(url);
+  };
+  reader.readAsDataURL(file);
+}
+
+function applyProfilePhoto(url) {
+  const el = document.getElementById('profile-avatar-display');
+  if(!el) return;
+  el.style.backgroundImage = 'url('+url+')';
+  el.style.backgroundSize = 'cover';
+  el.style.backgroundPosition = 'center';
+  const svg = el.querySelector('svg');
+  if(svg) svg.style.display = 'none';
+}
+
+
+function migratePRHistory() {
+  const archived = JSON.parse(localStorage.getItem('ll_archived') || '[]');
+  MAIN_LIFTS.forEach(l => {
+    const key = l.replace(/ /g,'_');
+    if(localStorage.getItem('ll_pr_history_'+key)) return; // already migrated
+    const history = [];
+    const seen = new Set();
+    // Pull from archived cycles (each has a date)
+    archived.forEach(c => {
+      if(c.setup && c.setup[l] && !seen.has(c.setup[l])) {
+        seen.add(c.setup[l]);
+        history.push({load: c.setup[l], date: c.date || Date.now()});
+      }
+    });
+    // Add current PR if different from last archived
+    if(setupData[l] && !seen.has(setupData[l])) {
+      history.push({load: setupData[l], date: Date.now()});
+    } else if(setupData[l] && history.length === 0) {
+      history.push({load: setupData[l], date: Date.now()});
+    }
+    if(history.length > 0) {
+      localStorage.setItem('ll_pr_history_'+key, JSON.stringify(history));
+    }
+  });
 }
 
 function showToast(msg){
@@ -3583,14 +3704,10 @@ function setupAutoAdvance() {
 }
 
 // Splash screen - hide app content until splash done
-document.querySelectorAll('.page, .nav-tabs').forEach(el => el.style.opacity = '0');
 setTimeout(() => {
   const splash = document.getElementById('splash');
   splash.classList.add('hide');
-  setTimeout(() => {
-    splash.remove();
-    document.querySelectorAll('.page, .nav-tabs').forEach(el => el.style.opacity = '');
-  }, 600);
+  setTimeout(() => splash.remove(), 600);
 }, 2000);
 
 const s=document.createElement('script');
