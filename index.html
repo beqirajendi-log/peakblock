@@ -1800,7 +1800,9 @@ function renderDays(anim){
       <div style="width:48px;height:2px;background:var(--accent);border-radius:1px;margin:24px 0"></div>
       <div style="font-size:15px;color:var(--muted);line-height:1.75;max-width:260px;margin-bottom:2.5rem">Pick a program. We'll handle the rest.</div>
       <button onclick="switchPage('profile');goProfileScreen('profile-plans')"
-        style="padding:14px 32px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;border-radius:var(--rs);border:1px solid rgba(240,192,64,0.4);background:transparent;color:var(--accent);cursor:pointer">
+        style="padding:14px 32px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;border-radius:var(--rs);border:1px solid rgba(240,192,64,0.4);background:transparent;color:var(--accent);cursor:pointer;transition:all 0.2s"
+        onmouseover="this.style.background='var(--accent)';this.style.color='#111';this.style.borderColor='var(--accent)'"
+        onmouseout="this.style.background='transparent';this.style.color='var(--accent)';this.style.borderColor='rgba(240,192,64,0.4)'">
         Go to Training Library →
       </button>
     </div>`;
@@ -3715,11 +3717,13 @@ function setupAutoAdvance() {
 // Splash screen - hide app content until splash done
 setTimeout(() => {
   const splash = document.getElementById('splash');
-  splash.classList.add('hide');
-  setTimeout(() => {
-    document.body.classList.remove('splash-active');
-    splash.remove();
-  }, 600);
+  // Fade splash out
+  splash.style.transition = 'opacity 0.4s ease';
+  splash.style.opacity = '0';
+  // Reveal app content immediately when fade starts
+  document.body.classList.remove('splash-active');
+  // Remove splash element after fade
+  setTimeout(() => splash.remove(), 450);
 }, 2000);
 
 const s=document.createElement('script');
