@@ -174,8 +174,8 @@ body { font-family: 'Geist', sans-serif; background: var(--bg); color: var(--tex
   transition: grid-template-rows 0.3s ease;
 }
 .day-card.open .day-body { grid-template-rows: 1fr; }
-.day-header-bottom .skip-link { border-color: var(--border2); color: var(--muted2); background: none; }
-.day-header-bottom .skip-link:hover { border-color: var(--muted); color: var(--muted); }
+.day-header-bottom .skip-link { border: 1px solid #2e2e2e; color: var(--muted); background: none; }
+.day-header-bottom .skip-link:hover { border-color: #484848; color: var(--text); }
 .day-body-inner {
   min-height: 0; overflow: hidden;
   padding: 16px 20px 20px;
@@ -1174,6 +1174,27 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
 .dash-bw-input-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
 .dash-bw-input { flex: 1; padding: 8px 10px; background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--rs); color: var(--text); font-size: 15px; font-family: 'Geist', sans-serif; }
 .dash-bw-save { padding: 8px 16px; background: var(--surface3); border: 1px solid var(--border2); border-radius: var(--rs); color: var(--text); font-family: 'Geist', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.5px; cursor: pointer; flex-shrink: 0; }
+/* TRAINING CALENDAR */
+.cal-week-row { display: flex; gap: 4px; }
+.cal-pill { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; padding: 7px 2px; border-radius: 8px; background: var(--surface2); border: 1px solid var(--border); min-width: 0; }
+.cal-pill.cal-completed { background: #008089; border-color: #008089; }
+.cal-pill.cal-today { background: transparent; border: 1.5px solid #008089; }
+.cal-pill.cal-future { background: var(--surface2); border-color: var(--border); opacity: 0.4; }
+.cal-pill-letter { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted2); line-height: 1; margin-bottom: 3px; }
+.cal-pill.cal-completed .cal-pill-letter { color: rgba(255,255,255,0.7); }
+.cal-pill.cal-today .cal-pill-letter { color: rgba(97,210,218,0.7); }
+.cal-pill-num { font-size: 12px; font-weight: 700; color: var(--muted); line-height: 1; }
+.cal-pill.cal-completed .cal-pill-num { color: #fff; }
+.cal-pill.cal-today .cal-pill-num { color: #61D2DA; }
+.cal-collapse-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.3s ease; }
+.cal-collapse-body.cal-open { grid-template-rows: 1fr; }
+.cal-collapse-inner { min-height: 0; overflow: hidden; }
+/* ACTIVITY METRICS */
+.act-metrics-row { display: flex; gap: 0; }
+.act-metric-cell { flex: 1; text-align: center; padding: 12px 4px; border-right: 1px solid var(--border); }
+.act-metric-cell:last-child { border-right: none; }
+.act-metric-val { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 0.5px; color: var(--text); line-height: 1; }
+.act-metric-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-top: 3px; }
 </style>
 </head>
 <body class="splash-active">
@@ -1345,6 +1366,9 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
     <div id="dash-pr-section"></div>
     <div class="dash-card" id="dash-volume-card"></div>
     <div class="dash-card" id="dash-recent-card"></div>
+    <div class="dash-card" id="dash-calendar-card"></div>
+    <div class="dash-card" id="dash-cycle-card"></div>
+    <div class="dash-card" id="dash-activity-card"></div>
     <div class="dash-card dash-bw-card" id="dash-bw-card">
       <div class="dash-bw-header" onclick="toggleBWCard()">
         <div class="dash-bw-label">Bodyweight</div>
@@ -2350,6 +2374,7 @@ function init(){
   // Force re-migration if version is old
   if(!localStorage.getItem("ll_pr_migration_v2")) { MAIN_LIFTS.forEach(l => localStorage.removeItem("ll_pr_history_"+l.replace(/ /g,"_"))); localStorage.setItem("ll_pr_migration_v2","1"); }
   migratePRHistory();
+  migrateCompletedDates();
   initOnboarding();
   for(let w=TOTAL_WEEKS;w>=1;w--){if(weekDone(w)>0){currentWeek=w;break;}}
   initTheme();
@@ -2617,6 +2642,9 @@ function renderDashboard() {
   if (bwUnit) bwUnit.textContent = u;
   const bwCard = document.getElementById('dash-bw-card');
   if (bwCard && bwCard.classList.contains('open')) renderBWChart();
+  renderCalendar();
+  renderCycleProgress();
+  renderActivityMetrics();
 }
 
 function toggleBWCard() {
@@ -3070,6 +3098,9 @@ function saveDay(d){
   renderHeader();renderDots();updateProgressBar();checkCycleComplete();
   setTimeout(() => autoOpenNextDay(), 300);
   haptic(30);
+  const _todayStr = new Date().toISOString().slice(0,10);
+  const _cdates = JSON.parse(localStorage.getItem('ll_completed_dates') || '[]');
+  if(!_cdates.includes(_todayStr)) { _cdates.push(_todayStr); localStorage.setItem('ll_completed_dates', JSON.stringify(_cdates)); }
 
   if(currentWeek===1){
     if(!template[d])template[d]={};
@@ -4176,7 +4207,7 @@ function buildSessionView(d, lift, presc, saved, hasSave, isSkipped) {
       // GZCLP: T1 (5×3) + T2 (3×10) + T3 (2×15+)
       const t1LoadText = presc.load
         ? `<span class="session-set-load">${presc.load} ${u}</span>`
-        : `<span class="session-set-pct" onclick="switchPage('prs')">Set weight</span>`;
+        : `<span class="session-set-pct" onclick="show1RMModal(${d},'${lift}')">Set weight</span>`;
       const failCount = parseInt(localStorage.getItem('ll_gzclp_fails_' + lift.replace(/ /g,'_')) || '0');
       setsHtml += `<div style="font-size:11px;font-weight:700;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:6px">T1 — ${lift}</div>`;
       for(let i = 1; i <= 5; i++) {
@@ -4189,7 +4220,7 @@ function buildSessionView(d, lift, presc, saved, hasSave, isSkipped) {
         const t2 = presc.t2;
         const t2LoadText = t2.load
           ? `<span class="session-set-load">${t2.load} ${u}</span>`
-          : `<span class="session-set-pct" onclick="switchPage('prs')">Set weight</span>`;
+          : `<span class="session-set-pct" onclick="show1RMModal(${d},'${t2.lift}')">Set weight</span>`;
         setsHtml += `<div style="height:1px;background:var(--border);margin:10px 0"></div>
           <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:6px">T2 — ${t2.lift}</div>`;
         for(let i = 1; i <= 3; i++) {
@@ -4285,15 +4316,7 @@ function buildSessionView(d, lift, presc, saved, hasSave, isSkipped) {
     onclick="saveDay(${d})">${hasSave?'✓ Day Complete':'Complete Day'}</button>`;
 
   return `
-    <div style="margin-bottom:4px">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-        <div style="width:3px;align-self:stretch;border-radius:2px;background:${liftColor};flex-shrink:0"></div>
-        <div>
-          <div style="font-family:'Geist',sans-serif;font-size:20px;font-weight:700;letter-spacing:0.5px;color:${liftColor}">${lift||'—'}</div>
-        </div>
-      </div>
-      <div class="session-sets">${setsHtml}</div>
-    </div>
+    <div class="session-sets" style="margin-bottom:4px">${setsHtml}</div>
     ${accHtml}
     ${btnHtml}`;
 }
@@ -4878,6 +4901,193 @@ function migratePRHistory() {
   });
 }
 
+
+function migrateCompletedDates() {
+  if(localStorage.getItem('ll_completed_dates_migrated')) return;
+  const dates = [];
+  for(let w = 1; w <= TOTAL_WEEKS; w++) {
+    for(let d = 1; d <= DAYS; d++) {
+      const e = getLog(w, d);
+      if(e?.saved && e.ts) {
+        const s = new Date(e.ts).toISOString().slice(0,10);
+        if(!dates.includes(s)) dates.push(s);
+      }
+    }
+  }
+  dates.sort();
+  localStorage.setItem('ll_completed_dates', JSON.stringify(dates));
+  localStorage.setItem('ll_completed_dates_migrated', '1');
+}
+
+function renderCalendar() {
+  const el = document.getElementById('dash-calendar-card');
+  if(!el) return;
+  const completed = new Set(JSON.parse(localStorage.getItem('ll_completed_dates') || '[]'));
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0,10);
+  // Build current-week row + collapsible full-month grid
+  const DAYS_SHORT = ['S','M','T','W','T','F','S'];
+  function weekStart(d) {
+    const t = new Date(d); t.setDate(t.getDate() - t.getDay()); return t;
+  }
+  function dateStr(d) { return d.toISOString().slice(0,10); }
+  function pillHtml(d) {
+    const s = dateStr(d);
+    const letter = DAYS_SHORT[d.getDay()];
+    const num = d.getDate();
+    let cls = 'cal-pill';
+    if(s === todayStr) cls += ' cal-today';
+    else if(completed.has(s)) cls += ' cal-completed';
+    else if(d > today) cls += ' cal-future';
+    return `<div class="${cls}"><div class="cal-pill-letter">${letter}</div><div class="cal-pill-num">${num}</div></div>`;
+  }
+  // Current week row
+  const ws = weekStart(today);
+  let weekRow = '<div class="cal-week-row">';
+  for(let i = 0; i < 7; i++) {
+    const d = new Date(ws); d.setDate(d.getDate() + i);
+    weekRow += pillHtml(d);
+  }
+  weekRow += '</div>';
+  // Full month grid for collapse
+  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+  const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  const gridStart = weekStart(monthStart);
+  let monthGrid = '';
+  let cur = new Date(gridStart);
+  while(cur <= monthEnd || cur.getDay() !== 0) {
+    if(cur.getDay() === 0) monthGrid += '<div class="cal-week-row" style="margin-top:4px">';
+    monthGrid += pillHtml(cur);
+    if(cur.getDay() === 6) monthGrid += '</div>';
+    cur.setDate(cur.getDate() + 1);
+    if(cur > monthEnd && cur.getDay() === 0) break;
+  }
+  const monthName = today.toLocaleString('default', {month:'long', year:'numeric'});
+  el.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted)">Training Calendar</div>
+      <button onclick="toggleCalendar()" id="cal-toggle-btn" style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--accent);background:none;border:none;cursor:pointer;padding:0">Month</button>
+    </div>
+    ${weekRow}
+    <div class="cal-collapse-body" id="cal-collapse">
+      <div class="cal-collapse-inner">
+        <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin:12px 0 8px">${monthName}</div>
+        ${monthGrid}
+      </div>
+    </div>`;
+}
+
+function toggleCalendar() {
+  const body = document.getElementById('cal-collapse');
+  const btn = document.getElementById('cal-toggle-btn');
+  if(!body) return;
+  const open = body.classList.toggle('cal-open');
+  if(btn) btn.textContent = open ? 'Week' : 'Month';
+}
+
+function renderCycleProgress() {
+  const el = document.getElementById('dash-cycle-card');
+  if(!el) return;
+  if(!activePlan || !PROGRAMS[activePlan]) { el.style.display = 'none'; return; }
+  el.style.display = '';
+  const plan = getActivePlan();
+  const totalWeeks = plan.weeks || TOTAL_WEEKS;
+  // Count saved days per week
+  const weekCounts = [];
+  for(let w = 1; w <= totalWeeks; w++) {
+    let count = 0;
+    for(let d = 1; d <= (plan.days || DAYS); d++) {
+      if(getLog(w, d)?.saved) count++;
+    }
+    weekCounts.push(count);
+  }
+  const daysPerWeek = plan.days || DAYS;
+  const completedWeeks = weekCounts.filter(c => c >= daysPerWeek).length;
+  const pct = Math.round((completedWeeks / totalWeeks) * 100);
+  // Bar
+  const barHtml = `<div style="height:6px;background:var(--surface3);border-radius:3px;margin:10px 0 14px;overflow:hidden">
+    <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#008089,#61D2DA);border-radius:3px;transition:width 0.6s ease"></div>
+  </div>`;
+  // Chart
+  const canvasId = 'cycle-chart-canvas';
+  el.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+      <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted)">Cycle Progress</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--text);letter-spacing:0.5px">${pct}%</div>
+    </div>
+    ${barHtml}
+    <canvas id="${canvasId}" height="60"></canvas>`;
+  if(window._cycleChart) { try{ window._cycleChart.destroy(); }catch(e){} window._cycleChart = null; }
+  const ctx = document.getElementById(canvasId)?.getContext('2d');
+  if(!ctx || typeof Chart === 'undefined') return;
+  const labels = weekCounts.map((_,i) => 'W'+(i+1));
+  const colors = weekCounts.map((c,i) => {
+    if(c >= daysPerWeek) return '#008089';
+    if(i+1 === currentWeek) return '#61D2DA';
+    return '#2e2e2e';
+  });
+  window._cycleChart = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets: [{ data: weekCounts.map(c => Math.min(c, daysPerWeek)), backgroundColor: colors, borderRadius: 4, borderSkipped: false }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => `${ctx.raw}/${daysPerWeek} days` } } },
+      scales: { x: { grid: { display: false }, ticks: { color: '#55565f', font: { size: 9, weight: '700' } }, border: { display: false } },
+        y: { display: false, max: daysPerWeek + 1 } } }
+  });
+}
+
+function renderActivityMetrics() {
+  const el = document.getElementById('dash-activity-card');
+  if(!el) return;
+  const completed = JSON.parse(localStorage.getItem('ll_completed_dates') || '[]');
+  const today = new Date();
+  function countInRange(start, end) {
+    return completed.filter(s => s >= start && s <= end).length;
+  }
+  function weekBounds(offset) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - d.getDay() + offset * 7);
+    const ws = d.toISOString().slice(0,10);
+    const we = new Date(d); we.setDate(we.getDate() + 6);
+    return [ws, we.toISOString().slice(0,10)];
+  }
+  const [tw0, tw1] = weekBounds(0);
+  const [lw0, lw1] = weekBounds(-1);
+  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().slice(0,10);
+  const monthEnd = today.toISOString().slice(0,10);
+  const thisWeek = countInRange(tw0, tw1);
+  const lastWeek = countInRange(lw0, lw1);
+  const thisMonth = countInRange(monthStart, monthEnd);
+  // 8-week sparkline data
+  const sparkData = [];
+  const sparkLabels = [];
+  for(let i = 7; i >= 0; i--) {
+    const [s, e] = weekBounds(-i);
+    sparkData.push(countInRange(s, e));
+    sparkLabels.push('W'+(8-i));
+  }
+  const canvasId = 'activity-spark-canvas';
+  el.innerHTML = `
+    <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Activity</div>
+    <div class="act-metrics-row">
+      <div class="act-metric-cell"><div class="act-metric-val">${thisWeek}</div><div class="act-metric-label">This Week</div></div>
+      <div class="act-metric-cell"><div class="act-metric-val">${lastWeek}</div><div class="act-metric-label">Last Week</div></div>
+      <div class="act-metric-cell"><div class="act-metric-val">${thisMonth}</div><div class="act-metric-label">This Month</div></div>
+    </div>
+    <canvas id="${canvasId}" height="56" style="margin-top:12px"></canvas>`;
+  if(window._activityChart) { try{ window._activityChart.destroy(); }catch(e){} window._activityChart = null; }
+  const ctx = document.getElementById(canvasId)?.getContext('2d');
+  if(!ctx || typeof Chart === 'undefined') return;
+  const maxVal = Math.max(...sparkData, 1);
+  window._activityChart = new Chart(ctx, {
+    type: 'bar',
+    data: { labels: sparkLabels, datasets: [{ data: sparkData,
+      backgroundColor: sparkData.map((_,i) => i === 7 ? '#61D2DA' : '#008089'),
+      borderRadius: 4, borderSkipped: false }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => `${c.raw} sessions` } } },
+      scales: { x: { grid: { display: false }, ticks: { color: '#55565f', font: { size: 9, weight: '700' } }, border: { display: false } },
+        y: { display: false, max: maxVal + 1 } } }
+  });
+}
 
 function autoOpenNextDay() {
   if(!activePlan || !PROGRAMS[activePlan]) return;
