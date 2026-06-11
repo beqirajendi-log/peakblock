@@ -15,7 +15,8 @@
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body.splash-active .page,
-body.splash-active .nav-tabs {
+body.splash-active .nav-tabs,
+.onboarding-hidden {
   display: none !important;
 }
 :root {
@@ -982,14 +983,14 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
   padding: 5rem 2.5rem 2rem; text-align: center;
 }
 .ws-overline {
-  font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700;
-  letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 1.5rem;
+  font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700;
+  letter-spacing: 3px; text-transform: uppercase; color: var(--accent); margin-bottom: 1.5rem;
 }
 .ws-headline {
   font-family: 'Bebas Neue', sans-serif; font-size: 64px;
   line-height: 0.95; color: var(--text); margin-bottom: 1.5rem;
 }
-.ws-body { font-size: 15px; color: var(--muted); max-width: 280px; line-height: 1.65; }
+.ws-body { font-size: 16px; color: var(--muted); max-width: 300px; line-height: 1.6; }
 .ws-bottom {
   padding: 1.25rem 1.5rem 2.5rem;
   display: flex; flex-direction: column; align-items: center; gap: 1.25rem;
@@ -1081,8 +1082,8 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
       </div>
       <div class="ws-slide">
         <div class="ws-overline">Your Progress</div>
-        <div class="ws-headline">Watch yourself<br>grow.</div>
-        <div class="ws-body">Track your PRs, volume, and streaks. The numbers don't lie.</div>
+        <div class="ws-headline">Earn every<br>rep.</div>
+        <div class="ws-body">Track your progress, volume and streaks. Every session compounds.</div>
       </div>
     </div>
   </div>
@@ -2204,6 +2205,13 @@ function getPrescription(week, lift, day) {
 }
 
 function init(){
+  // On first launch, hide dashboard + nav before any render to prevent flash before slides
+  if(!localStorage.getItem('ll_onboarding_seen')) {
+    const dash = document.getElementById('page-dashboard');
+    if(dash) { dash.classList.remove('active'); dash.classList.add('onboarding-hidden'); }
+    const nav = document.querySelector('.nav-tabs');
+    if(nav) nav.classList.add('onboarding-hidden');
+  }
   syncPlanConstants();
   // Force re-migration if version is old
   if(!localStorage.getItem("ll_pr_migration_v2")) { MAIN_LIFTS.forEach(l => localStorage.removeItem("ll_pr_history_"+l.replace(/ /g,"_"))); localStorage.setItem("ll_pr_migration_v2","1"); }
@@ -4522,6 +4530,8 @@ function viewProfileArchivedCycle(idx) {
 function obFinish() {
   const ob = document.getElementById('onboarding');
   localStorage.setItem('ll_onboarding_seen','1');
+  // Restore elements hidden during first-launch onboarding flow
+  document.querySelectorAll('.onboarding-hidden').forEach(function(el) { el.classList.remove('onboarding-hidden'); });
   if(ob) {
     ob.style.opacity='0';
     setTimeout(()=>{ ob.style.display='none'; }, 400);
@@ -4593,7 +4603,7 @@ function initOnboarding() {
   if(!ob) return;
   ob.style.display = 'none';
   if(!seen) {
-    setTimeout(function() { initWelcomeSlides(); }, 2700);
+    setTimeout(function() { initWelcomeSlides(); }, 3000);
   }
 }
 
@@ -4850,7 +4860,7 @@ setTimeout(() => {
   document.body.classList.remove('splash-active');
   // Remove splash element after fade
   setTimeout(() => splash.remove(), 450);
-}, 2000);
+}, 2500);
 
 const s=document.createElement('script');
 s.src='https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
