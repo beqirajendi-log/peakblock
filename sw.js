@@ -1,7 +1,9 @@
-﻿const CACHE = 'strive-v135';
+﻿const CACHE = 'strive-v136';
 const ASSETS = [
   '/peakblock/',
   '/peakblock/index.html',
+  '/peakblock/css/styles.css',
+  '/peakblock/js/app.js',
   '/peakblock/manifest.json'
 ];
 self.addEventListener('install', e => {
