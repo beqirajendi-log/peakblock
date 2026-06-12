@@ -1,4 +1,4 @@
-﻿const CACHE = 'strive-v133';
+﻿const CACHE = 'strive-v134';
 const ASSETS = [
   '/peakblock/',
   '/peakblock/index.html',

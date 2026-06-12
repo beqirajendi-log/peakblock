@@ -124,22 +124,17 @@ body { font-family: 'Geist', sans-serif; background: var(--bg); color: var(--tex
 
 /* DARK DAY CARDS WITH TEAL ACCENT */
 .day-card {
-  border-radius: 16px;
-  margin-bottom: 12px;
-  overflow: hidden;
-  background: #1a1a1a;
-  border: 1px solid #2e2e2e;
-  border-left: 3px solid #008089;
+  border-radius: 16px; margin-bottom: 12px;
+  background: #1a1a1a; border: 1px solid #2e2e2e; border-left: 3px solid #008089;
   transition: transform 0.15s ease, opacity 0.2s;
 }
-.day-header {
-  padding: 16px 20px 14px;
-  cursor: pointer; user-select: none;
+.day-card-top {
+  padding: 16px 20px 14px; cursor: pointer; user-select: none;
 }
-.day-header-top {
+.day-card-top-row {
   display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 0;
 }
+.day-card-top-row + .day-card-top-row { margin-top: 8px; }
 .day-label {
   font-family: 'Geist', sans-serif; font-size: 11px; font-weight: 600;
   letter-spacing: 2px; text-transform: uppercase; color: var(--muted);
@@ -158,30 +153,32 @@ body { font-family: 'Geist', sans-serif; background: var(--bg); color: var(--tex
 .day-status-badge.upcoming {
   background: rgba(0,128,137,0.15); border: 1px solid rgba(97,210,218,0.3); color: #61D2DA;
 }
-.day-lift-name {
-  font-family: 'Bebas Neue', sans-serif; font-size: 32px; line-height: 1.05;
-  color: #F4F5F5; margin-bottom: 4px; letter-spacing: 1px;
+.day-skip-btn {
+  font-family: 'Geist', sans-serif; font-size: 10px; font-weight: 700;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  padding: 4px 10px; border-radius: 20px;
+  border: 1px solid #2e2e2e; color: var(--muted2); background: transparent;
+  cursor: pointer; transition: all 0.15s;
 }
-.day-summary {
-  font-size: 13px; color: var(--muted);
-}
-.day-header-bottom {
-  display: flex; justify-content: space-between; align-items: center; margin-top: 8px;
-}
+.day-skip-btn:hover { border-color: #484848; color: var(--muted); }
+.day-skip-btn.skip-active { border-color: #484848; color: var(--muted); background: rgba(120,120,130,0.1); }
 .day-chevron {
   display: flex; align-items: center; justify-content: center;
   color: var(--muted2); transition: transform 0.25s ease; flex-shrink: 0;
 }
 .day-card.open .day-chevron { transform: rotate(180deg); }
-.day-body {
+.day-lift-name {
+  font-family: 'Bebas Neue', sans-serif; font-size: 32px; line-height: 1.05;
+  color: #F4F5F5; margin-bottom: 12px; letter-spacing: 1px;
+}
+.day-card-body {
   display: grid; grid-template-rows: 0fr;
+  overflow: hidden;
   transition: grid-template-rows 0.3s ease;
 }
-.day-card.open .day-body { grid-template-rows: 1fr; }
-.day-header-bottom .skip-link { border: 1px solid #2e2e2e; color: var(--muted); background: none; }
-.day-header-bottom .skip-link:hover { border-color: #484848; color: var(--text); }
-.day-body-inner {
-  min-height: 0; overflow: hidden;
+.day-card.open .day-card-body { grid-template-rows: 1fr; }
+.day-card-body-inner { min-height: 0; }
+.day-card-body-content {
   padding: 16px 20px 20px;
   border-top: 1px solid #2e2e2e;
   background: #242424;
@@ -1165,9 +1162,9 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
 .dash-recent-row:last-child { border-bottom: none; padding-bottom: 2px; }
 .dash-recent-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
 .dash-recent-main { flex: 1; min-width: 0; }
-.dash-recent-lift { font-size: 13px; font-weight: 600; color: var(--text); }
-.dash-recent-meta { font-size: 11px; color: var(--muted); margin-top: 1px; }
-.dash-recent-load { font-family: 'Geist', sans-serif; font-size: 14px; font-weight: 700; color: var(--muted); flex-shrink: 0; }
+.dash-recent-lift { font-size: 12px; font-weight: 600; color: var(--text); }
+.dash-recent-meta { font-size: 10px; color: var(--muted); margin-top: 1px; }
+.dash-recent-load { font-family: 'Geist', sans-serif; font-size: 12px; font-weight: 700; color: var(--muted); flex-shrink: 0; }
 /* TRAINING CALENDAR */
 .cal-week-row { display: flex; gap: 4px; }
 .cal-pill { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; padding: 7px 2px; border-radius: 8px; background: var(--surface2); border: 1px solid var(--border); min-width: 0; }
@@ -1183,12 +1180,15 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
 .cal-collapse-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.3s ease; }
 .cal-collapse-body.cal-open { grid-template-rows: 1fr; }
 .cal-collapse-inner { min-height: 0; overflow: hidden; }
-/* ACTIVITY METRICS */
-.act-metrics-row { display: flex; gap: 0; }
-.act-metric-cell { flex: 1; text-align: center; padding: 12px 4px; border-right: 1px solid var(--border); }
-.act-metric-cell:last-child { border-right: none; }
-.act-metric-val { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 0.5px; color: var(--text); line-height: 1; }
-.act-metric-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-top: 3px; }
+/* SESSIONS ROW */
+.dash-sessions-row { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 12px; }
+/* AMBIENT GLOW */
+.dash-glow {
+  position: absolute; top: 0; left: 0; right: 0; height: 340px;
+  background: radial-gradient(circle at 50% 0%, rgba(0,128,137,0.11) 0%, transparent 65%);
+  pointer-events: none; z-index: 0;
+}
+#page-dashboard { position: relative; }
 </style>
 </head>
 <body class="splash-active">
@@ -1364,18 +1364,21 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
 </div>
 
 <div id="page-dashboard" class="page active">
-  <div style="padding:0 1.25rem 0.5rem">
+  <div class="dash-glow"></div>
+  <div style="padding:0 1.25rem 0.5rem;position:relative;z-index:1">
     <div id="dash-greeting" class="dash-greeting"></div>
+    <div id="dash-next-card"></div>
     <div class="dash-stats-row">
       <div class="dash-card dash-ring-card" id="dash-ring-card"></div>
       <div class="dash-card dash-streak-card" id="dash-streak-card"></div>
     </div>
-    <div id="dash-next-card"></div>
-    <div class="dash-card" id="dash-volume-card"></div>
-    <div class="dash-card" id="dash-recent-card"></div>
     <div class="dash-card" id="dash-calendar-card"></div>
     <div class="dash-card" id="dash-cycle-card"></div>
-    <div class="dash-card" id="dash-activity-card"></div>
+    <div class="dash-card" id="dash-volume-card"></div>
+    <div class="dash-sessions-row">
+      <div class="dash-card" id="dash-recent-card"></div>
+      <div class="dash-card" id="dash-activity-card"></div>
+    </div>
   </div>
 </div>
 
@@ -2547,35 +2550,7 @@ function renderDashboard() {
     }
   }
 
-  const volEl = document.getElementById('dash-volume-card');
-  if (volEl) {
-    const wv = getWeeklyVolume();
-    const maxVol = Math.max.apply(null, Object.values(wv.vol).concat([1]));
-    const VLABELS = { 'Back Squat':'Squat','Shoulder Press':'OHP','Overhead Press':'OHP' };
-    const rows = wv.lifts.map(function(l) {
-      const v = wv.vol[l];
-      const barPct = v > 0 ? Math.max(Math.round(v / maxVol * 100), 4) : 0;
-      const color = LIFT_COLORS[l] || 'var(--muted)';
-      const label = VLABELS[l] || l;
-      const key = l.replace(/ /g,'_');
-      return '<div class="dash-vol-row">' +
-        '<div class="dash-vol-label">' + label + '</div>' +
-        '<div class="dash-vol-bar-wrap">' +
-        '<div style="flex:1;height:7px;background:var(--border2);border-radius:4px;overflow:hidden">' +
-        '<div class="dash-vol-bar" style="width:' + barPct + '%;height:100%;background:' + color + ';border-radius:4px"></div>' +
-        '</div>' +
-        '<span class="dash-vol-num" id="dash-vol-' + key + '">' + (v > 0 ? '0' : '—') + '</span>' +
-        '</div></div>';
-    }).join('');
-    volEl.innerHTML = '<div class="dash-section-label">Weekly Volume</div>' + rows;
-    wv.lifts.forEach(function(l) {
-      const v = wv.vol[l];
-      if(v > 0) {
-        const el = document.getElementById('dash-vol-' + l.replace(/ /g,'_'));
-        animateCount(el, Math.round(v), 600, function(n) { return n.toLocaleString(); });
-      }
-    });
-  }
+  renderVolumeProgression();
 
   const recentEl = document.getElementById('dash-recent-card');
   if (recentEl) {
@@ -2764,21 +2739,6 @@ function renderDays(anim){
   document.querySelector('.cycle-progress-wrap') && (document.querySelector('.cycle-progress-wrap').style.display = '');
   document.querySelector('.page-header') && (document.querySelector('.page-header').style.display = '');
 
-  // Show PRs missing banner if no starting weights/1RMs set
-  const promptLifts = plan.isGZCLP ? plan.promptLifts : MAIN_LIFTS;
-  const missingPRs = promptLifts.filter(l => !setupData[l] || setupData[l] === 0);
-  const existingBanner = document.getElementById('missing-prs-banner');
-  if(existingBanner) existingBanner.remove();
-  if(missingPRs.length > 0) {
-    const banner = document.createElement('div');
-    banner.id = 'missing-prs-banner';
-    banner.style.cssText = 'margin:0 1.25rem 0.75rem;background:rgba(0,128,137,0.08);border:1px solid rgba(0,128,137,0.3);border-radius:var(--rs);padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px';
-    const bannerText = plan.isGZCLP ? 'Enter your starting weights to auto-calculate session loads' : 'Enter your 1 Rep Max to auto-calculate training weights';
-    banner.innerHTML = `<span style="font-size:12px;color:var(--accent)">${bannerText}</span>
-      <button onclick="switchPage('prs')" style="font-size:12px;font-family:'Geist',sans-serif;font-weight:700;letter-spacing:1px;text-transform:uppercase;border:1px solid var(--accent);background:transparent;color:var(--accent);border-radius:var(--rs);padding:5px 10px;cursor:pointer;white-space:nowrap">Set PRs</button>`;
-    scroll.before(banner);
-  }
-
   // Track which day to auto-open: first unsaved, or day 1
   let autoOpen = 1;
   for(let d=1;d<=DAYS;d++){ if(!getLog(currentWeek,d)?.saved){autoOpen=d;break;} }
@@ -2825,21 +2785,23 @@ function renderDays(anim){
     card.className='day-card'+(hasSave?' has-data':'')+(isSkipped?' skipped':'')+(isOpen?' open':'');
     card.setAttribute('data-day',d);card.id=`dc-${d}`;
     card.innerHTML=`
-      <div class="day-header" onclick="haptic(10);toggleDay(${d})">
-        <div class="day-header-top">
+      <div class="day-card-top" onclick="haptic(10);toggleDay(${d})">
+        <div class="day-card-top-row">
           <span class="day-label">Day ${d}${dayTypeLabel}</span>
           <span class="day-status-badge ${badgeClass}" id="dc-badge-${d}">${badgeText}</span>
         </div>
-        <div class="day-header-bottom">
-          <button class="skip-link${isSkipped?' skip-active':''}" onclick="event.stopPropagation();haptic(10);skipDay(${d})">${isSkipped?'Unskip':'Skip'}</button>
+        <div class="day-card-top-row">
+          <button class="day-skip-btn${isSkipped?' skip-active':''}" onclick="event.stopPropagation();haptic(10);skipDay(${d})">${isSkipped?'Unskip':'Skip'}</button>
           <span class="day-chevron"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
         </div>
       </div>
-      <div class="day-body">
-        <div class="day-body-inner">
-          <div class="day-check" style="display:none"></div>
-          ${selLift ? `<div class="day-lift-name" style="margin-bottom:12px">${selLift}</div>` : ''}
-          ${buildSessionView(d, selLift, presc, saved, hasSave, isSkipped)}
+      <div class="day-card-body">
+        <div class="day-card-body-inner">
+          <div class="day-card-body-content">
+            <div class="day-check" style="display:none"></div>
+            ${selLift ? `<div class="day-lift-name">${selLift}</div>` : ''}
+            ${buildSessionView(d, selLift, presc, saved, hasSave, isSkipped)}
+          </div>
         </div>
       </div>`;
     if(hasSave) { card.classList.add('saved-day'); card.classList.add('day-saved'); }
@@ -4031,19 +3993,11 @@ function confirmPlanSwitch(planId) {
   updatePlanBadges();
   updateLogPlanName();
   goProfileScreen('profile-main');
-  // Check if starting weights / PRs are set
-  const switchPlan = PROGRAMS[planId];
-  const planPromptLifts = switchPlan?.isGZCLP ? switchPlan.promptLifts : MAIN_LIFTS;
-  const missingPRs = planPromptLifts.filter(l => !setupData[l] || setupData[l] === 0);
-  if(missingPRs.length > 0) {
-    showPRPrompt(missingPRs);
-  } else {
-    autoPopulateAllWeeks();
-    renderAll();
-    syncPlanConstants();
+  autoPopulateAllWeeks();
+  renderAll();
+  syncPlanConstants();
   showToast('Switched to ' + (PROGRAMS[planId]?.name || planId));
-    switchPage('log');
-  }
+  switchPage('log');
 }
 
 
@@ -4938,14 +4892,68 @@ function renderCycleProgress() {
   });
 }
 
+function renderVolumeProgression() {
+  const el = document.getElementById('dash-volume-card');
+  if(!el) return;
+  if(!activePlan || !PROGRAMS[activePlan]) { el.innerHTML = ''; return; }
+  const plan = getActivePlan();
+  const totalWeeks = plan.weeks || TOTAL_WEEKS;
+  const lifts = plan.isGZCLP ? (plan.promptLifts || []) : MAIN_LIFTS;
+  const weeklyData = {};
+  lifts.forEach(l => { weeklyData[l] = []; });
+  const weekLabels = [];
+  for(let w = 1; w <= totalWeeks; w++) {
+    weekLabels.push('W' + w);
+    lifts.forEach(l => {
+      let vol = 0;
+      for(let d = 1; d <= (plan.days || DAYS); d++) {
+        const e = getLog(w, d);
+        if(e?.saved && e.lift === l) vol += (parseFloat(e.sets)||0)*(parseFloat(e.reps)||0)*(parseFloat(e.load)||0);
+      }
+      weeklyData[l].push(vol > 0 ? vol : null);
+    });
+  }
+  const canvasId = 'volume-prog-canvas';
+  const legendHtml = lifts.map(l => {
+    const color = LIFT_COLORS[l] || 'var(--muted)';
+    return `<div style="display:flex;align-items:center;gap:5px"><div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></div><span style="font-size:10px;color:var(--muted)">${l}</span></div>`;
+  }).join('');
+  el.innerHTML = `
+    <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Volume Progression</div>
+    <div style="height:180px;position:relative"><canvas id="${canvasId}"></canvas></div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px">${legendHtml}</div>`;
+  if(window._volumeChart) { try{ window._volumeChart.destroy(); }catch(e){} window._volumeChart = null; }
+  const ctx = document.getElementById(canvasId)?.getContext('2d');
+  if(!ctx || typeof Chart === 'undefined') return;
+  const LIFT_COLORS_LIST = ['#61D2DA','#00A670','#008089','#45E3B0'];
+  const datasets = lifts.map((l, i) => ({
+    label: l, data: weeklyData[l],
+    borderColor: LIFT_COLORS[l] || LIFT_COLORS_LIST[i % 4],
+    backgroundColor: 'transparent',
+    borderWidth: 2, tension: 0.4,
+    pointRadius: 2.5, pointBackgroundColor: LIFT_COLORS[l] || LIFT_COLORS_LIST[i % 4],
+    spanGaps: false
+  }));
+  window._volumeChart = new Chart(ctx, {
+    type: 'line',
+    data: { labels: weekLabels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: '#55565f', font: { size: 9, weight: '700' } }, border: { display: false } },
+        y: { display: false }
+      }
+    }
+  });
+}
+
 function renderActivityMetrics() {
   const el = document.getElementById('dash-activity-card');
   if(!el) return;
   const completed = JSON.parse(localStorage.getItem('ll_completed_dates') || '[]');
   const today = new Date();
-  function countInRange(start, end) {
-    return completed.filter(s => s >= start && s <= end).length;
-  }
+  function countInRange(s, e) { return completed.filter(d => d >= s && d <= e).length; }
   function weekBounds(offset) {
     const d = new Date(today);
     d.setDate(d.getDate() - d.getDay() + offset * 7);
@@ -4960,36 +4968,15 @@ function renderActivityMetrics() {
   const thisWeek = countInRange(tw0, tw1);
   const lastWeek = countInRange(lw0, lw1);
   const thisMonth = countInRange(monthStart, monthEnd);
-  // 8-week sparkline data
-  const sparkData = [];
-  const sparkLabels = [];
-  for(let i = 7; i >= 0; i--) {
-    const [s, e] = weekBounds(-i);
-    sparkData.push(countInRange(s, e));
-    sparkLabels.push('W'+(8-i));
-  }
-  const canvasId = 'activity-spark-canvas';
   el.innerHTML = `
-    <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Activity</div>
-    <div class="act-metrics-row">
-      <div class="act-metric-cell"><div class="act-metric-val">${thisWeek}</div><div class="act-metric-label">This Week</div></div>
-      <div class="act-metric-cell"><div class="act-metric-val">${lastWeek}</div><div class="act-metric-label">Last Week</div></div>
-      <div class="act-metric-cell"><div class="act-metric-val">${thisMonth}</div><div class="act-metric-label">This Month</div></div>
-    </div>
-    <div style="height:80px;position:relative;margin-top:12px"><canvas id="${canvasId}"></canvas></div>`;
-  if(window._activityChart) { try{ window._activityChart.destroy(); }catch(e){} window._activityChart = null; }
-  const ctx = document.getElementById(canvasId)?.getContext('2d');
-  if(!ctx || typeof Chart === 'undefined') return;
-  const maxVal = Math.max(...sparkData, 1);
-  window._activityChart = new Chart(ctx, {
-    type: 'bar',
-    data: { labels: sparkLabels, datasets: [{ data: sparkData,
-      backgroundColor: sparkData.map(() => '#008089'),
-      borderRadius: 3, borderSkipped: false }] },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => `${c.raw} sessions` } } },
-      scales: { x: { grid: { display: false }, ticks: { display: false }, border: { display: false } },
-        y: { display: false, max: maxVal + 1 } } }
-  });
+    <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Activity</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      ${[['THIS WEEK',thisWeek],['LAST WEEK',lastWeek],['THIS MONTH',thisMonth]].map(([lbl,val])=>`
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)">${lbl}</span>
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--accent);line-height:1">${val}</span>
+        </div>`).join('')}
+    </div>`;
 }
 
 function autoOpenNextDay() {
@@ -5033,15 +5020,8 @@ function saveSet1RM(d, lift) {
   const saved = getLog(currentWeek, d);
   const dayCard = document.getElementById('dc-' + d);
   if(dayCard) {
-    const bodyInner = dayCard.querySelector('.day-body-inner');
-    if(bodyInner) bodyInner.innerHTML = `<div class="day-check" style="display:none"></div>` + (lift ? `<div class="day-lift-name" style="margin-bottom:12px">${lift}</div>` : '') + buildSessionView(d, lift, presc, saved, saved && saved.saved, saved && saved.skipped || false);
-  }
-  // Remove missing-PRs banner if all lifts now have 1RMs
-  const plan = getActivePlan();
-  const promptLifts = plan.isGZCLP ? plan.promptLifts : MAIN_LIFTS;
-  if(promptLifts.every(function(l) { return setupData[l] > 0; })) {
-    const banner = document.getElementById('missing-prs-banner');
-    if(banner) banner.remove();
+    const bodyInner = dayCard.querySelector('.day-card-body-content');
+    if(bodyInner) bodyInner.innerHTML = `<div class="day-check" style="display:none"></div>` + (lift ? `<div class="day-lift-name">${lift}</div>` : '') + buildSessionView(d, lift, presc, saved, saved && saved.saved, saved && saved.skipped || false);
   }
 }
 
@@ -5126,13 +5106,8 @@ function save1RMModal(d, lift) {
   const saved = getLog(currentWeek, d);
   const dayCard = document.getElementById('dc-' + d);
   if(dayCard) {
-    const bodyInner = dayCard.querySelector('.day-body-inner');
-    if(bodyInner) bodyInner.innerHTML = `<div class="day-check" style="display:none"></div>` + (lift ? `<div class="day-lift-name" style="margin-bottom:12px">${lift}</div>` : '') + buildSessionView(d, lift, presc, saved, saved && saved.saved, saved && (saved.skipped || false));
-  }
-  const plan = getActivePlan();
-  const promptLifts = plan.isGZCLP ? plan.promptLifts : MAIN_LIFTS;
-  if(promptLifts.every(l => setupData[l] > 0)) {
-    document.getElementById('missing-prs-banner')?.remove();
+    const bodyInner = dayCard.querySelector('.day-card-body-content');
+    if(bodyInner) bodyInner.innerHTML = (lift ? `<div class="day-lift-name">${lift}</div>` : '') + buildSessionView(d, lift, presc, saved, saved && saved.saved, saved && (saved.skipped || false));
   }
 }
 
