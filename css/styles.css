@@ -11,6 +11,7 @@ body.splash-active .top-header,
   --text: #eeeef0; --muted: #7a7b85; --muted2: #55565f;
   --accent: #008089; --accent2: rgba(0,128,137,0.15); --accent-light: #61D2DA; --accent-glow: rgba(97,210,218,0.12);
   --green: #5ddb8a; --green2: rgba(93,219,138,0.12);
+  --header-bg: rgba(17,18,20,0.92); --nav-bg: rgba(17,18,20,0.85); --nav-border: rgba(255,255,255,0.06);
   --r: 12px; --rs: 8px;
   /* Type scale: 11 / 13 / 15 / 20 / 32 */
   --text-xs: 11px;
@@ -31,7 +32,7 @@ body { font-family: 'Geist', sans-serif; background: var(--bg); color: var(--tex
   height: 52px;
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 1.25rem;
-  background: rgba(17,18,20,0.92);
+  background: var(--header-bg);
   backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
 }
@@ -51,9 +52,9 @@ body { font-family: 'Geist', sans-serif; background: var(--bg); color: var(--tex
 
 .nav-tabs {
   display: flex; position: fixed; bottom: 0; left: 0; right: 0; z-index: 20;
-  background: rgba(17,18,20,0.85);
+  background: var(--nav-bg);
   backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
-  border-top: 1px solid rgba(255,255,255,0.06);
+  border-top: 1px solid var(--nav-border);
   padding-bottom: env(safe-area-inset-bottom, 0);
 }
 .nav-tab {
@@ -90,7 +91,7 @@ body { font-family: 'Geist', sans-serif; background: var(--bg); color: var(--tex
 .page-header p { font-size: 13px; color: var(--muted); margin-top: 4px; }
 
 /* WEEK NAV sticky */
-.week-nav-wrap { position: sticky; top: 52px; z-index: 15; background: rgba(17,18,20,0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 0.75rem 1rem 0; border-bottom: 1px solid var(--border); }
+.week-nav-wrap { position: sticky; top: 52px; z-index: 15; background: var(--header-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 0.75rem 1rem 0; border-bottom: 1px solid var(--border); }
 .week-nav { display: flex; align-items: center; margin-bottom: 0.5rem; }
 .nav-btn { width: 36px; height: 36px; border-radius: var(--rs); border: 1px solid var(--border2); background: var(--surface); color: var(--text); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0; }
 .nav-btn:hover { background: var(--surface2); }
@@ -106,10 +107,10 @@ body { font-family: 'Geist', sans-serif; background: var(--bg); color: var(--tex
 .week-dot.partial { background: var(--surface2); border-color: var(--border); color: var(--muted2); opacity: 0.6; }
 
 
-/* DARK DAY CARDS WITH TEAL ACCENT */
+/* DAY CARDS */
 .day-card {
   border-radius: 16px; margin-bottom: 12px;
-  background: #1a1a1a; border: 1px solid #2e2e2e; border-left: 3px solid #008089;
+  background: var(--surface); border: 1px solid var(--surface3); border-left: 3px solid #008089;
   transition: transform 0.15s ease, opacity 0.2s;
 }
 .day-card-top {
@@ -132,7 +133,7 @@ body { font-family: 'Geist', sans-serif; background: var(--bg); color: var(--tex
   background: rgba(0,166,112,0.15); border: 1px solid rgba(0,166,112,0.3); color: #00A670;
 }
 .day-status-badge.badge-skipped {
-  background: rgba(72,72,72,0.3); border: 1px solid #484848; color: #484848;
+  background: var(--surface3); border: 1px solid var(--muted2); color: var(--muted);
 }
 .day-status-badge.upcoming {
   background: rgba(0,128,137,0.15); border: 1px solid rgba(97,210,218,0.3); color: #61D2DA;
@@ -141,11 +142,11 @@ body { font-family: 'Geist', sans-serif; background: var(--bg); color: var(--tex
   font-family: 'Geist', sans-serif; font-size: 10px; font-weight: 700;
   letter-spacing: 1.5px; text-transform: uppercase;
   padding: 4px 10px; border-radius: 20px;
-  border: 1px solid #2e2e2e; color: var(--muted2); background: transparent;
+  border: 1px solid var(--surface3); color: var(--muted2); background: transparent;
   cursor: pointer; transition: all 0.15s;
 }
-.day-skip-btn:hover { border-color: #484848; color: var(--muted); }
-.day-skip-btn.skip-active { border-color: #484848; color: var(--muted); background: rgba(120,120,130,0.1); }
+.day-skip-btn:hover { border-color: var(--muted2); color: var(--muted); }
+.day-skip-btn.skip-active { border-color: var(--muted2); color: var(--muted); background: rgba(120,120,130,0.1); }
 .day-chevron {
   display: flex; align-items: center; justify-content: center;
   color: var(--muted2); transition: transform 0.25s ease; flex-shrink: 0;
@@ -153,7 +154,7 @@ body { font-family: 'Geist', sans-serif; background: var(--bg); color: var(--tex
 .day-card.open .day-chevron { transform: rotate(180deg); }
 .day-lift-name {
   font-family: 'Bebas Neue', sans-serif; font-size: 32px; line-height: 1.05;
-  color: #F4F5F5; margin-bottom: 12px; letter-spacing: 1px;
+  color: var(--text); margin-bottom: 12px; letter-spacing: 1px;
 }
 .day-card-body {
   display: grid; grid-template-rows: 0fr;
@@ -164,8 +165,8 @@ body { font-family: 'Geist', sans-serif; background: var(--bg); color: var(--tex
 .day-card-body-inner { min-height: 0; }
 .day-card-body-content {
   padding: 16px 20px 20px;
-  border-top: 1px solid #2e2e2e;
-  background: #242424;
+  border-top: 1px solid var(--surface3);
+  background: var(--surface2);
 }
 .day-check { display: none; }
 
@@ -196,7 +197,7 @@ body { font-family: 'Geist', sans-serif; background: var(--bg); color: var(--tex
 .presc-input.auto-filled { border-color: rgba(0,128,137,0.4); color: var(--accent); }
 .presc-hint { font-size: 11px; color: var(--muted2); text-align: center; margin-bottom: 10px; font-family: 'Geist', sans-serif; letter-spacing: 0.5px; }
 
-.acc-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 12px 0; }
+.acc-divider { height: 1px; background: var(--border); margin: 12px 0; }
 
 .acc-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--rs); padding: 10px 12px; margin-bottom: 8px; }
 .acc-item-top { margin-bottom: 8px; }
@@ -277,7 +278,7 @@ canvas { width: 100% !important; }
   color: var(--muted2); padding: 3px 8px; cursor: pointer; transition: all 0.15s;
 }
 .skip-link:hover { border-color: var(--muted); color: var(--muted); }
-.skip-link.skip-active { border-color: #7a7b85; color: #7a7b85; background: rgba(120,120,130,0.1); }
+.skip-link.skip-active { border-color: var(--muted); color: var(--muted); background: rgba(120,120,130,0.1); }
 
 .unit-toggle-row { display: flex; gap: 10px; }
 .unit-btn {
@@ -306,7 +307,7 @@ canvas { width: 100% !important; }
   background: transparent; color: var(--muted2); cursor: pointer; transition: all 0.15s;
 }
 .skip-day-btn:hover { border-color: var(--muted); color: var(--muted); }
-.skip-day-btn.skipped { border-color: #7a7b85; color: #7a7b85; background: rgba(120,120,130,0.1); }
+.skip-day-btn.skipped { border-color: var(--muted); color: var(--muted); background: rgba(120,120,130,0.1); }
 
 
 .lift-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
@@ -653,7 +654,7 @@ canvas.sparkline { width: 100% !important; height: 40px !important; }
   width: 100%; margin-top: 20px; padding: 14px;
   font-family: 'Geist', sans-serif; font-size: 14px;
   font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
-  border-radius: 12px; border: 1px solid #2e2e2e;
+  border-radius: 12px; border: 1px solid var(--border2);
   background: transparent; color: var(--muted); cursor: pointer;
   transition: all 0.15s;
 }
@@ -678,14 +679,14 @@ canvas.sparkline { width: 100% !important; height: 40px !important; }
 
 
 .day-card.day-saved {
-  background: #1a1a1a !important;
-  border: 1px solid #2e2e2e !important;
+  background: var(--surface) !important;
+  border: 1px solid var(--surface3) !important;
   border-left: 3px solid #00A670 !important;
 }
 .day-card.day-skipped {
-  background: #1a1a1a !important;
-  border: 1px solid #2e2e2e !important;
-  border-left: 3px solid #484848 !important;
+  background: var(--surface) !important;
+  border: 1px solid var(--surface3) !important;
+  border-left: 3px solid var(--muted2) !important;
   opacity: 0.6 !important;
 }
 
@@ -705,7 +706,7 @@ canvas.sparkline { width: 100% !important; height: 40px !important; }
 }
 .btn-secondary:hover { background: rgba(0,128,137,0.1); }
 .btn-destructive {
-  background: transparent; color: var(--muted); border: 1px solid #484848; border-radius: 12px;
+  background: transparent; color: var(--muted); border: 1px solid var(--border2); border-radius: 12px;
   padding: 12px 20px; font-family: 'Geist', sans-serif; font-size: 14px;
   font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
   cursor: pointer; transition: all 0.15s;
@@ -714,7 +715,7 @@ canvas.sparkline { width: 100% !important; height: 40px !important; }
 
 /* GLOBAL INPUT STYLES */
 .presc-input, .setup-input-wrap input, .acc-input {
-  background: #242424; border: 1px solid #484848; border-radius: 12px;
+  background: var(--surface2); border: 1px solid var(--border2); border-radius: 12px;
 }
 .presc-input:focus, .setup-input-wrap input:focus { border-color: #008089; }
 
@@ -758,7 +759,7 @@ button:active, .plan-confirm-btn:active, .dash-start-btn:active, .complete-day-b
 .no-data { text-align: center; padding: 2rem; font-size: 13px; color: var(--muted); }
 input::placeholder { color: var(--muted2); }
 
-.toast { position: fixed; top: 3.5rem; left: 50%; transform: translateX(-50%) translateY(-16px); background: rgba(17,18,20,0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(0,128,137,0.25); color: var(--text); font-family: 'Geist', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.5px; padding: 10px 20px; border-radius: 20px; opacity: 0; transition: all 0.25s ease; pointer-events: none; z-index: 9998; white-space: nowrap; }
+.toast { position: fixed; top: 3.5rem; left: 50%; transform: translateX(-50%) translateY(-16px); background: var(--header-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(0,128,137,0.25); color: var(--text); font-family: 'Geist', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.5px; padding: 10px 20px; border-radius: 20px; opacity: 0; transition: all 0.25s ease; pointer-events: none; z-index: 9998; white-space: nowrap; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
 #splash {
@@ -815,6 +816,7 @@ body.light {
   --text: #111214; --muted: #6b6c75; --muted2: #9a9ba5;
   --accent: #008089; --accent2: rgba(0,128,137,0.15);
   --green: #2db862; --green2: rgba(45,184,98,0.12);
+  --header-bg: rgba(244,244,246,0.92); --nav-bg: rgba(244,244,246,0.90); --nav-border: rgba(0,0,0,0.06);
   --d1bg: rgba(97,210,218,0.08); --d2bg: rgba(0,166,112,0.08);
   --d3bg: rgba(0,128,137,0.08); --d4bg: rgba(69,227,176,0.08);
 }
@@ -847,6 +849,8 @@ body.light {
   opacity: 0; pointer-events: none;
   transition: opacity 0.3s ease;
 }
+body.light .pr-celebration .pr-lift-name { color: #ffffff; }
+body.light .pr-celebration .pr-subtitle { color: rgba(255,255,255,0.7); }
 .pr-celebration.show { opacity: 1; pointer-events: all; }
 .pr-celebration-inner {
   text-align: center; padding: 2rem;

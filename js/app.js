@@ -949,8 +949,8 @@ function renderChart(){
     data:{labels:Array.from({length:TOTAL_WEEKS},(_,i)=>`W${i+1}`),
       datasets:disp.map(l=>({label:l,data:vol[l],borderColor:LIFT_COLORS[l],backgroundColor:LIFT_COLORS[l]+'33',borderWidth:2,pointRadius:3,tension:0.3,fill:false}))},
     options:{responsive:true,interaction:{mode:'index',intersect:false},
-      plugins:{legend:{display:false},tooltip:{backgroundColor:'#1c1d21',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,titleColor:'#eeeef0',bodyColor:'#7a7b85',callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()} lbs`}}},
-      scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#55565f',font:{size:10}}},y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#55565f',font:{size:10},callback:v=>v>=1000?`${(v/1000).toFixed(1)}k`:v}}}}
+      plugins:{legend:{display:false},tooltip:{backgroundColor:document.body.classList.contains('light')?'#ffffff':'#1c1d21',borderColor:document.body.classList.contains('light')?'rgba(0,0,0,0.12)':'rgba(255,255,255,0.1)',borderWidth:1,titleColor:document.body.classList.contains('light')?'#111214':'#eeeef0',bodyColor:document.body.classList.contains('light')?'#6b6c75':'#7a7b85',callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()} lbs`}}},
+      scales:{x:{grid:{color:document.body.classList.contains('light')?'rgba(0,0,0,0.05)':'rgba(255,255,255,0.04)'},ticks:{color:document.body.classList.contains('light')?'#6b6c75':'#55565f',font:{size:10}}},y:{grid:{color:document.body.classList.contains('light')?'rgba(0,0,0,0.05)':'rgba(255,255,255,0.04)'},ticks:{color:document.body.classList.contains('light')?'#6b6c75':'#55565f',font:{size:10},callback:v=>v>=1000?`${(v/1000).toFixed(1)}k`:v}}}}
   });
 }
 
@@ -1104,6 +1104,7 @@ function renderPRChart(key) {
   if(!canvas) return;
 
   setTimeout(() => {
+    const isLight = document.body.classList.contains('light');
     const dpr = window.devicePixelRatio || 1;
     const W = canvas.parentElement?.clientWidth || 300;
     const H = 200;
@@ -1142,7 +1143,7 @@ function renderPRChart(key) {
 
       // Bottom axis line
       ctx.beginPath();
-      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.strokeStyle = isLight ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.08)';
       ctx.lineWidth = 1;
       ctx.moveTo(PAD.left, H - PAD.bottom);
       ctx.lineTo(W - PAD.right, H - PAD.bottom);
@@ -1212,7 +1213,7 @@ function renderPRChart(key) {
         ctx.fillText(label, lx, ly);
 
         // Date below axis
-        ctx.font='10px Geist,sans-serif'; ctx.fillStyle='rgba(120,122,133,0.9)';
+        ctx.font='10px Geist,sans-serif'; ctx.fillStyle=isLight ? 'rgba(60,62,75,0.8)' : 'rgba(120,122,133,0.9)';
         const dateAlign = i===0 ? 'left' : (i===vals.length-1 ? 'right' : 'center');
         ctx.textAlign=dateAlign;
         const dx = i===0 ? Math.max(PAD.left, x) : (i===vals.length-1 ? Math.min(W-PAD.right, x) : x);
@@ -2862,7 +2863,7 @@ function renderVolumeProgression() {
       responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
       scales: {
-        x: { grid: { display: false }, ticks: { color: '#55565f', font: { size: 9, weight: '700' } }, border: { display: false } },
+        x: { grid: { display: false }, ticks: { color: document.body.classList.contains('light') ? '#6b6c75' : '#55565f', font: { size: 9, weight: '700' } }, border: { display: false } },
         y: { display: false }
       }
     }
