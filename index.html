@@ -60,6 +60,10 @@ body { font-family: 'Geist', sans-serif; background: var(--bg); color: var(--tex
   width: 24px; height: 24px; color: var(--muted); cursor: pointer;
   flex-shrink: 0;
 }
+.header-actions { display: flex; align-items: center; gap: 12px; }
+.header-theme-btn { background: none; border: none; padding: 0; cursor: pointer; color: var(--muted); width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: transform 0.2s, opacity 0.2s; }
+.header-theme-btn:active { transform: scale(0.85); }
+.header-theme-btn svg { width: 24px; height: 24px; transition: opacity 0.2s, transform 0.2s; }
 
 .nav-tabs {
   display: flex; position: fixed; bottom: 0; left: 0; right: 0; z-index: 20;
@@ -828,7 +832,7 @@ body.light {
   --bg: #f4f4f6; --surface: #ffffff; --surface2: #ebebef; --surface3: #e0e0e6;
   --border: rgba(0,0,0,0.07); --border2: rgba(0,0,0,0.13);
   --text: #111214; --muted: #6b6c75; --muted2: #9a9ba5;
-  --accent: #c49a10; --accent2: rgba(196,154,16,0.12);
+  --accent: #008089; --accent2: rgba(0,128,137,0.15);
   --green: #2db862; --green2: rgba(45,184,98,0.12);
   --d1bg: rgba(97,210,218,0.08); --d2bg: rgba(0,166,112,0.08);
   --d3bg: rgba(0,128,137,0.08); --d4bg: rgba(69,227,176,0.08);
@@ -1317,10 +1321,24 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
 
 <header class="top-header">
   <div class="top-header-wordmark">STRIVE</div>
-  <svg class="top-header-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-  </svg>
+  <div class="header-actions">
+    <button class="header-theme-btn" id="header-theme-btn" onclick="toggleTheme()" aria-label="Toggle theme">
+      <svg id="header-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"/>
+        <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+        <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      </svg>
+      <svg id="header-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+    </button>
+    <svg class="top-header-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+      <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+    </svg>
+  </div>
 </header>
 
 <div class="nav-tabs">
@@ -1487,17 +1505,6 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
     <div id="setup-settings" class="setup-screen">
       <button class="setup-back-btn" onclick="goProfileScreen('profile-main')">‹ Back</button>
       <div class="page-header" style="padding:0 0 1.25rem"><h2>Settings</h2></div>
-      <div class="lift-setup-card">
-        <div class="settings-row">
-          <div class="settings-row-left">
-            <div class="settings-row-title">Dark mode</div>
-            <div class="settings-row-sub">Switch between dark and light theme</div>
-          </div>
-          <div class="toggle-switch" id="theme-toggle" onclick="toggleTheme()">
-            <div class="toggle-knob"></div>
-          </div>
-        </div>
-      </div>
     </div>
 
     <!-- BLOCK REVIEW -->
@@ -1948,13 +1955,6 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
       <button class="setup-back-btn" onclick="goProfileScreen('profile-main')">‹ Back</button>
       <div class="page-header" style="padding:0 0 1.25rem"><h2>Settings</h2></div>
 
-      <!-- Dark Mode -->
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)">
-        <span style="font-size:14px;color:var(--text)">Dark Mode</span>
-        <div class="toggle-switch" id="p-theme-toggle" onclick="toggleTheme()">
-          <div class="toggle-knob"></div>
-        </div>
-      </div>
 
       <!-- Weight -->
       <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)">
@@ -5246,24 +5246,23 @@ function resetSaveBtn(d) {
 }
 
 // THEME TOGGLE
+function _updateHeaderThemeIcon(isLight) {
+  const sun = document.getElementById('header-icon-sun');
+  const moon = document.getElementById('header-icon-moon');
+  if(sun) sun.style.display = isLight ? 'none' : '';
+  if(moon) moon.style.display = isLight ? '' : 'none';
+}
 function toggleTheme() {
   const isLight = document.body.classList.toggle('light');
   localStorage.setItem('ll_theme', isLight ? 'light' : 'dark');
-  // Update both possible toggle IDs
-  ['theme-toggle','p-theme-toggle'].forEach(id => {
-    const tog = document.getElementById(id);
-    if(tog) tog.classList.toggle('on', !isLight);
-  });
+  _updateHeaderThemeIcon(isLight);
 }
 function initTheme() {
   const saved = localStorage.getItem('ll_theme');
   const isDark = saved !== 'light';
   if(!isDark) document.body.classList.add('light');
   else document.body.classList.remove('light');
-  ['theme-toggle','p-theme-toggle'].forEach(id => {
-    const tog = document.getElementById(id);
-    if(tog) tog.classList.toggle('on', isDark);
-  });
+  _updateHeaderThemeIcon(!isDark);
 }
 
 // CYCLE PROGRESS BAR
