@@ -3161,14 +3161,10 @@ function setupAutoAdvance() {
 // Splash screen - hide app content until splash done
 setTimeout(() => {
   const splash = document.getElementById('splash');
-  // Fade splash out
-  splash.style.transition = 'opacity 0.4s ease';
-  splash.style.opacity = '0';
-  // Reveal app content immediately when fade starts
+  splash.classList.add('fade-out');
   document.body.classList.remove('splash-active');
-  // Remove splash element after fade
-  setTimeout(() => splash.remove(), 450);
-}, 2500);
+  setTimeout(() => { splash.style.display = 'none'; }, 400);
+}, 4000);
 
 const s=document.createElement('script');
 s.src='https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
