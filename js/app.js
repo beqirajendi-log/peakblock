@@ -335,6 +335,153 @@ function getDashQuote() {
   return DASH_QUOTES[parseInt(localStorage.getItem('ll_quote_index') || '0') % DASH_QUOTES.length];
 }
 
+// --- Hero scene system ---
+const HERO_TIMES = {
+  morning:   { sky: ['#0d2e30','#145c5f','#3d7d76','#b89a72'], orb: {bg:'#e8d3a3', top:110, left:150, size:64, glow:'rgba(232,211,163,0.35)'}, stars:0, greet:'Good morning' },
+  afternoon: { sky: ['#103f42','#2d8a8f','#7fc4c7'], orb: {bg:'#eef2ea', top:28, left:270, size:54, glow:'rgba(238,242,234,0.3)'}, stars:0, greet:'Good afternoon' },
+  evening:   { sky: ['#0a2226','#1f6e72','#9c5f4f','#c9a06a'], orb: {bg:'#dba48f', top:100, left:90, size:68, glow:'rgba(219,164,143,0.35)'}, stars:0, greet:'Good evening' },
+  night:     { sky: ['#04141a','#0a2a30','#123b3f'], orb: {bg:'#cdd9db', top:24, left:290, size:48, glow:'rgba(205,217,219,0.25)'}, stars:1, greet:'Late session' }
+};
+
+const HERO_SCENE_DARK = {
+  morning:   ['#0a2222','#061a1a'],
+  afternoon: ['#0c2e30','#081f21'],
+  evening:   ['#0a1c1e','#051113'],
+  night:     ['#020a0c','#010607']
+};
+
+function heroGetTimeKey() {
+  const h = new Date().getHours();
+  if (h >= 5 && h < 11) return 'morning';
+  if (h >= 11 && h < 17) return 'afternoon';
+  if (h >= 17 && h < 21) return 'evening';
+  return 'night';
+}
+
+function heroMountainShapes(d1,d2,light) {
+  return `<svg viewBox="0 0 380 140" preserveAspectRatio="none">
+    <polygon points="0,140 0,90 60,45 130,95 200,35 270,90 340,55 380,85 380,140" fill="${d1}"/>
+    <polygon points="0,140 0,105 90,65 180,105 260,60 380,100 380,140" fill="${d2}"/>
+  </svg>`;
+}
+function heroBeachShapes(d1,d2,light) {
+  return `<svg viewBox="0 0 380 140" preserveAspectRatio="none">
+    <rect x="0" y="55" width="380" height="50" fill="${d2}"/>
+    <path d="M0,68 Q40,62 80,68 T160,68 T240,68 T320,68 T380,68" stroke="${light}" stroke-width="1.5" fill="none" opacity="0.35"/>
+    <path d="M0,82 Q40,76 80,82 T160,82 T240,82 T320,82 T380,82" stroke="${light}" stroke-width="1.5" fill="none" opacity="0.25"/>
+    <path d="M0,96 Q40,90 80,96 T160,96 T240,96 T320,96 T380,96" stroke="${light}" stroke-width="1.5" fill="none" opacity="0.2"/>
+    <path d="M0,102 Q190,90 380,104 V140 H0 Z" fill="${d1}"/>
+    <g fill="${d1}">
+      <path d="M44,140 C42,110 50,90 58,75 L62,77 C56,92 50,112 50,140 Z"/>
+      <path d="M58,75 C40,68 25,60 14,52 C30,52 50,58 60,70 Z"/>
+      <path d="M58,75 C76,64 88,52 96,42 C84,46 66,56 58,73 Z"/>
+      <path d="M58,75 C46,58 38,42 33,28 C48,36 58,54 60,73 Z"/>
+      <path d="M58,75 C66,56 76,40 84,28 C70,34 60,52 56,73 Z"/>
+      <path d="M58,75 C58,54 60,36 62,20 C66,38 64,58 60,75 Z"/>
+    </g>
+    <g fill="${d1}" opacity="0.7">
+      <rect x="295" y="58" width="1.5" height="14"/>
+      <path d="M296,58 L308,68 L296,68 Z"/>
+      <path d="M280,70 Q296,66 312,70 L308,73 L284,73 Z"/>
+    </g>
+  </svg>`;
+}
+function heroForestShapes(d1,d2,light) {
+  let trees = '';
+  [15,65,125,185,245,305,355].forEach((x,i) => {
+    const h = 65 + (i%3)*14;
+    const c = i % 2 === 0 ? d1 : d2;
+    trees += `<g fill="${c}">
+      <polygon points="${x},${140-h} ${x-16},${140-h+28} ${x+16},${140-h+28}"/>
+      <polygon points="${x},${140-h+18} ${x-20},${140-h+46} ${x+20},${140-h+46}"/>
+      <polygon points="${x},${140-h+36} ${x-24},${140-h+64} ${x+24},${140-h+64}"/>
+      <rect x="${x-2}" y="${140-h+58}" width="4" height="${h-50}"/>
+    </g>`;
+  });
+  return `<svg viewBox="0 0 380 140" preserveAspectRatio="none"><rect x="0" y="128" width="380" height="12" fill="${d2}"/>${trees}</svg>`;
+}
+function heroCityShapes(d1,d2,light) {
+  const buildings = [
+    {x:0,w:34,h:70,top:'flat'},{x:34,w:22,h:95,top:'antenna'},{x:56,w:30,h:55,top:'flat'},
+    {x:86,w:26,h:110,top:'step'},{x:112,w:18,h:65,top:'flat'},{x:130,w:36,h:88,top:'flat'},
+    {x:166,w:24,h:60,top:'flat'},{x:190,w:30,h:120,top:'antenna'},{x:220,w:20,h:72,top:'flat'},
+    {x:240,w:34,h:100,top:'step'},{x:274,w:22,h:58,top:'flat'},{x:296,w:28,h:84,top:'flat'},
+    {x:324,w:18,h:66,top:'flat'},{x:342,w:38,h:104,top:'step'}
+  ];
+  let svg = '';
+  buildings.forEach((b,i) => {
+    const c = i % 2 === 0 ? d1 : d2;
+    const y = 140 - b.h;
+    svg += `<rect x="${b.x}" y="${y}" width="${b.w}" height="${b.h}" fill="${c}"/>`;
+    if (b.top === 'antenna') svg += `<rect x="${b.x + b.w/2 - 1}" y="${y-16}" width="2" height="16" fill="${c}"/>`;
+    if (b.top === 'step') svg += `<rect x="${b.x + b.w*0.2}" y="${y-14}" width="${b.w*0.6}" height="14" fill="${c}"/>`;
+    const rows = Math.floor(b.h/16), cols = Math.max(1, Math.floor(b.w/10));
+    for (let r=1;r<rows;r++) for (let c2=0;c2<cols;c2++) {
+      if ((r+c2+i)%3===0) svg += `<rect x="${b.x+4+c2*9}" y="${y+r*14}" width="3" height="4" fill="${light}" opacity="0.4"/>`;
+    }
+  });
+  return `<svg viewBox="0 0 380 140" preserveAspectRatio="none">${svg}</svg>`;
+}
+function heroDesertShapes(d1,d2,light) {
+  return `<svg viewBox="0 0 380 140" preserveAspectRatio="none">
+    <path d="M0,90 Q90,70 190,88 T380,75 V140 H0 Z" fill="${d2}"/>
+    <path d="M0,115 Q120,95 230,112 T380,105 V140 H0 Z" fill="${d1}"/>
+    <g fill="${d1}">
+      <rect x="60" y="70" width="8" height="40" rx="3"/>
+      <rect x="44" y="85" width="8" height="22" rx="3"/>
+      <rect x="76" y="80" width="8" height="28" rx="3"/>
+      <rect x="320" y="78" width="7" height="35" rx="3"/>
+      <rect x="306" y="92" width="7" height="20" rx="3"/>
+    </g>
+  </svg>`;
+}
+function heroLakeShapes(d1,d2,light) {
+  return `<svg viewBox="0 0 380 140" preserveAspectRatio="none">
+    <polygon points="0,75 30,55 60,75 90,50 120,75 150,58 180,75 210,52 240,75 270,60 300,75 330,55 360,75 380,68 380,80 0,80" fill="${d2}"/>
+    <rect x="0" y="78" width="380" height="62" fill="${d1}"/>
+    <path d="M0,92 Q40,88 80,92 T160,92 T240,92 T320,92 T380,92" stroke="${light}" stroke-width="1.5" fill="none" opacity="0.3"/>
+    <path d="M0,108 Q40,104 80,108 T160,108 T240,108 T320,108 T380,108" stroke="${light}" stroke-width="1.5" fill="none" opacity="0.2"/>
+    <path d="M0,124 Q40,120 80,124 T160,124 T240,124 T320,124 T380,124" stroke="${light}" stroke-width="1.5" fill="none" opacity="0.15"/>
+    <g fill="${d2}">
+      <rect x="290" y="78" width="6" height="40"/>
+      <rect x="330" y="78" width="6" height="40"/>
+      <rect x="280" y="78" width="62" height="6"/>
+    </g>
+  </svg>`;
+}
+
+const HERO_SCENES = {
+  mountain: heroMountainShapes, beach: heroBeachShapes, forest: heroForestShapes,
+  city: heroCityShapes, desert: heroDesertShapes, lake: heroLakeShapes
+};
+
+function renderDashboardHero() {
+  const timeKey = heroGetTimeKey();
+  const t = HERO_TIMES[timeKey];
+  const sceneKeys = Object.keys(HERO_SCENES);
+  const sceneKey = sceneKeys[Math.floor(Math.random() * sceneKeys.length)];
+
+  document.getElementById('heroSky').style.background = `linear-gradient(to bottom, ${t.sky.join(', ')})`;
+
+  const orb = document.getElementById('heroOrb');
+  orb.style.background = t.orb.bg;
+  orb.style.width = t.orb.size + 'px';
+  orb.style.height = t.orb.size + 'px';
+  orb.style.top = t.orb.top + 'px';
+  orb.style.left = t.orb.left + 'px';
+  orb.style.boxShadow = `0 0 40px 8px ${t.orb.glow}`;
+
+  document.getElementById('heroStars').style.opacity = t.stars;
+
+  const [d1, d2] = HERO_SCENE_DARK[timeKey];
+  document.getElementById('heroShapes').innerHTML = HERO_SCENES[sceneKey](d1, d2, t.orb.bg);
+
+  const account = JSON.parse(localStorage.getItem('ll_account') || '{}');
+  const firstName = account.firstName || (typeof accountData !== 'undefined' && accountData.firstname) || 'Athlete';
+  document.getElementById('heroGreeting').textContent = `${t.greet}, ${firstName}`;
+  document.getElementById('heroQuote').textContent = getDashQuote();
+}
+
 function getTrainingStreak() {
   if (!activePlan) return 0;
   const plan = getActivePlan();
@@ -409,16 +556,10 @@ function getWeeklyVolume() {
 }
 
 function renderDashboard() {
+  renderDashboardHero();
   const plan = activePlan ? getActivePlan() : null;
   const u = weightUnit();
   const acct = (typeof accountData !== 'undefined') ? accountData : {};
-
-  const hour = new Date().getHours();
-  const greet = hour < 12 ? 'Good morning' : (hour < 17 ? 'Good afternoon' : 'Good evening');
-  const firstName = acct.firstname || 'Athlete';
-  const gEl = document.getElementById('dash-greeting');
-  if (gEl) gEl.innerHTML = '<div class="dash-greeting-line">' + greet + ', ' + firstName + '.</div>' +
-    '<div class="dash-quote">“' + getDashQuote() + '”</div>';
 
   const totalDays = plan ? plan.days : 4;
   let doneDays = 0;

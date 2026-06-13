@@ -1172,9 +1172,36 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
 .session-1rm-save { padding: 8px 14px; background: var(--surface3); border: 1px solid var(--border2); border-radius: var(--rs); color: var(--text); font-family: 'Geist', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.5px; cursor: pointer; flex-shrink: 0; }
 
 /* DASHBOARD */
-.dash-greeting { padding: 1.5rem 0 1rem; }
-.dash-greeting-line { font-family: 'Geist', sans-serif; font-size: 26px; font-weight: 700; letter-spacing: 0.5px; color: var(--text); line-height: 1.1; }
-.dash-quote { font-size: 12px; color: var(--muted); margin-top: 6px; font-style: italic; line-height: 1.4; }
+.hero {
+  position: relative;
+  height: 220px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+.hero-sky { position: absolute; inset: 0; transition: background 0.5s ease; }
+.hero-orb { position: absolute; border-radius: 50%; transition: all 0.5s ease; }
+.hero-stars { position: absolute; inset: 0; opacity: 0; transition: opacity 0.5s ease; }
+.hero-stars span { position: absolute; width: 3px; height: 3px; background: #F4F5F5; border-radius: 50%; opacity: 0.8; }
+.hero-shapes { position: absolute; bottom: 0; left: 0; right: 0; height: 140px; }
+.hero-shapes svg { display: block; width: 100%; height: 100%; }
+.hero-fade {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 180px;
+  background: linear-gradient(to bottom, transparent, var(--bg));
+  pointer-events: none;
+}
+.hero-text { position: relative; z-index: 3; padding: 0 20px 28px; }
+.hero-greeting {
+  font-family: 'Bebas Neue', sans-serif; font-size: 36px; letter-spacing: 1px;
+  color: #F4F5F5; line-height: 1.05; text-shadow: 0 2px 12px rgba(0,0,0,0.35);
+}
+.hero-quote {
+  margin-top: 8px; font-size: 13px; font-style: italic;
+  color: rgba(244,245,245,0.75); text-shadow: 0 1px 8px rgba(0,0,0,0.35);
+}
+.hero + * { margin-top: -70px; position: relative; z-index: 2; }
+
 .dash-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 1rem; margin-bottom: 0.75rem; }
 .dash-section-label { font-family: 'Geist', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
 .dash-stats-row { display: flex; gap: 0.75rem; margin-bottom: 0.75rem; }
