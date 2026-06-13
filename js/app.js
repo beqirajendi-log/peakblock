@@ -3161,10 +3161,9 @@ function setupAutoAdvance() {
 // Splash screen - hide app content until splash done
 setTimeout(() => {
   const splash = document.getElementById('splash');
-  splash.classList.add('fade-out');
+  splash.classList.add('removed');
   document.body.classList.remove('splash-active');
-  setTimeout(() => { splash.style.display = 'none'; }, 400);
-}, 4000);
+}, 5000);
 
 const s=document.createElement('script');
 s.src='https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
