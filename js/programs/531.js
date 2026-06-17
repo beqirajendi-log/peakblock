@@ -7,12 +7,19 @@ PROGRAMS['531'] = {
   useTM: true, // uses Training Max = 90% of 1RM
   tmPct: 0.90,
   warmupRows: 0, // no separate warmup rows
+  feedbackType: 'rpe',
+  rpeAdjustment: {
+    lowThreshold: 5,
+    highThreshold: 9,
+    consecutiveSessions: 2,
+    adjustmentPct: 2.5
+  },
   lowerLifts: ['Back Squat','Deadlift'], // get +10lbs bump, upper gets +5lbs
   dayLifts: ['Back Squat','Bench Press','Deadlift','Shoulder Press'],
   // 4-week cycle repeating x3: 5s week, 3s week, 5/3/1 week, deload
   weeklyScheme: [
     // Cycle 1
-    {phase:'5s Week',   sets:[{s:1,r:5,pct:0.65},{s:1,r:5,pct:0.75},{s:1,r:5,pct:0.85,amrap:true}], cycle:1},
+    {phase:'5s Week',   sets:[{s:1,r:5,pct:0.65},{s:1,r:5,pct:0.75},{s:1,r:5,pct:0.85,amrap:true}], cycle:1, dayNotes:{1:'First week of the cycle. Work up to your top set and hit the AMRAP — leave nothing in the tank.'}},
     {phase:'3s Week',   sets:[{s:1,r:3,pct:0.70},{s:1,r:3,pct:0.80},{s:1,r:3,pct:0.90,amrap:true}], cycle:1},
     {phase:'5/3/1 Week',sets:[{s:1,r:5,pct:0.75},{s:1,r:3,pct:0.85},{s:1,r:1,pct:0.95,amrap:true}], cycle:1},
     {phase:'Deload',    sets:[{s:1,r:5,pct:0.40},{s:1,r:5,pct:0.50},{s:1,r:5,pct:0.60}], deload:true, cycle:1},

@@ -59,6 +59,10 @@ function getPrescription(week, lift, day) {
   if(!scheme) return {sets:1,reps:1,load:0,pct:0,displaySets:[]};
   const oneRM = setupData[lift] || 0;
 
+  const rpeOverrides = JSON.parse(localStorage.getItem('ll_rpe_overrides') || '{}');
+  const rpeOvr = rpeOverrides[lift] || 0;
+  const ovFactor = 1 + rpeOvr / 100;
+
   if(plan.useTM) {
     const cycleNum = scheme.cycle || Math.ceil(week/4);
     const isLower = (plan.lowerLifts||[]).includes(lift);
@@ -66,14 +70,14 @@ function getPrescription(week, lift, day) {
     const tm = oneRM ? roundLoad((oneRM * plan.tmPct) + (cycleNum-1) * bumpPerCycle) : 0;
     const schemeSets = scheme.sets || [];
     const topSet = schemeSets[schemeSets.length-1] || {s:1,r:1,pct:0};
-    const topLoad = tm ? roundLoad(tm * topSet.pct) : 0;
+    const topLoad = tm ? roundLoad(tm * topSet.pct * ovFactor) : 0;
     const displaySets = schemeSets.map((s, i) => ({
       setNum: i+1,
       setsDisplay: String(s.s),
       repsDisplay: String(s.r),
       pctLabel: Math.round(s.pct*100) + '%',
       pctClickable: true,
-      load: tm ? roundLoad(tm * s.pct) : null,
+      load: tm ? roundLoad(tm * s.pct * ovFactor) : null,
       amrap: !!s.amrap
     }));
     return {
@@ -82,7 +86,7 @@ function getPrescription(week, lift, day) {
       phase: scheme.phase, deload: !!scheme.deload, displaySets
     };
   } else {
-    const workLoad = oneRM ? roundLoad(oneRM * scheme.pct) : 0;
+    const workLoad = oneRM ? roundLoad(oneRM * scheme.pct * ovFactor) : 0;
     const w1Load = workLoad ? roundLoad(workLoad * 0.6) : null;
     const w2Load = workLoad ? roundLoad(workLoad * 0.8) : null;
     const displaySets = [
@@ -848,12 +852,20 @@ function saveDay(d){
   }
 
   showCompletionCelebration(() => {
-    if (cycleComplete) {
-      switchPage('profile');
-      goProfileScreen('profile-review');
-      showToast('Cycle complete! 🎉');
+    const _afterRPE = () => {
+      if (cycleComplete) {
+        switchPage('profile');
+        goProfileScreen('profile-review');
+        showToast('Cycle complete! 🎉');
+      }
+      if (prOneRM) showPRCelebration(lift, prOneRM);
+    };
+    const _plan = getActivePlan();
+    if (_plan && _plan.feedbackType === 'rpe') {
+      showRPEPrompt(lift, _afterRPE);
+    } else {
+      _afterRPE();
     }
-    if (prOneRM) showPRCelebration(lift, prOneRM);
   });
 }
 
@@ -1490,6 +1502,12 @@ function startNewCycle(mode) {
   localStorage.setItem('ll_log', JSON.stringify(logData));
   currentWeek = 1;
 
+  // Clear RPE feedback data for fresh cycle
+  LIFT_LIBRARY.forEach(lib => {
+    localStorage.removeItem('ll_rpe_history_' + lib.name.replace(/\s+/g, '_'));
+  });
+  localStorage.removeItem('ll_rpe_overrides');
+
   if(mode === 'same') {
     // Keep template — auto-populate new cycle with same lifts/accessories
     // Recalculate weights based on updated 1RMs
@@ -1905,6 +1923,18 @@ function buildSessionView(d, lift, presc, saved, hasSave, isSkipped) {
   const plan = getActivePlan();
   const u = weightUnit();
 
+  // Day notes
+  const weekScheme = plan.weeklyScheme ? plan.weeklyScheme[currentWeek-1] : null;
+  const dayNote = weekScheme?.dayNotes?.[d];
+  const notesHtml = dayNote ? `<div class="day-notes">
+    <span class="day-notes-icon">💡</span>
+    <p class="day-notes-text">${dayNote}</p>
+  </div>` : '';
+
+  // RPE override tag
+  const rpeOverrides = JSON.parse(localStorage.getItem('ll_rpe_overrides') || '{}');
+  const rpeOvr = lift ? (rpeOverrides[lift] || 0) : 0;
+
   let setsHtml = '';
 
   if(lift && presc && presc.displaySets && presc.displaySets.length > 0) {
@@ -1914,7 +1944,10 @@ function buildSessionView(d, lift, presc, saved, hasSave, isSkipped) {
         const subSpan = s.pctClickable
           ? `<span class="session-set-pct-sub" onclick="show1RMModal(${d},'${lift}')" style="cursor:pointer"> @ ${s.pctLabel}</span>`
           : `<span class="session-set-pct-sub"> ${s.pctLabel}</span>`;
-        loadText = `<span class="session-set-load-gold">${s.load} ${u}</span>${subSpan}`;
+        const rpeTag = (rpeOvr !== 0 && !s.warmup)
+          ? `<span class="rpe-tag ${rpeOvr > 0 ? 'up' : 'down'}">${rpeOvr > 0 ? '↑ +' : '↓ '}${Math.abs(rpeOvr)}%</span>`
+          : '';
+        loadText = `<span class="session-set-load-gold">${s.load} ${u}</span>${subSpan}${rpeTag}`;
       } else {
         loadText = `<span class="session-set-pct" onclick="show1RMModal(${d},'${lift}')">${s.pctLabel}</span>`;
       }
@@ -1951,6 +1984,7 @@ function buildSessionView(d, lift, presc, saved, hasSave, isSkipped) {
     onclick="saveDay(${d})">${hasSave?'✓ Day Complete':'Complete Day'}</button>`;
 
   return `
+    ${notesHtml}
     <div class="session-sets" style="margin-bottom:4px">${setsHtml}</div>
     ${accHtml}
     ${btnHtml}`;
@@ -2930,6 +2964,76 @@ function updateProgressBar() {
   document.getElementById('progress-label').textContent = `Week ${currentWeek} of ${totalWeeks} · ${doneWeeks} complete`;
   document.getElementById('progress-pct').textContent = `${pct}%`;
   document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+// RPE FEEDBACK
+function showRPEPrompt(lift, afterCallback) {
+  const overlay = document.getElementById('rpeOverlay');
+  const numbersEl = document.getElementById('rpeNumbers');
+  const saveBtn = document.getElementById('rpeSaveBtn');
+  const skipBtn = document.getElementById('rpeSkipBtn');
+
+  let selectedRPE = null;
+
+  numbersEl.innerHTML = '';
+  for (let i = 1; i <= 10; i++) {
+    const btn = document.createElement('div');
+    btn.className = 'rpe-num';
+    btn.textContent = i;
+    btn.onclick = () => {
+      document.querySelectorAll('.rpe-num').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedRPE = i;
+      saveBtn.disabled = false;
+    };
+    numbersEl.appendChild(btn);
+  }
+
+  saveBtn.disabled = true;
+  overlay.classList.add('active');
+
+  const dismiss = () => {
+    overlay.classList.remove('active');
+    if (afterCallback) afterCallback();
+  };
+
+  saveBtn.onclick = () => {
+    if (selectedRPE !== null) {
+      processRPEFeedback(selectedRPE, lift);
+      dismiss();
+    }
+  };
+  skipBtn.onclick = () => dismiss();
+}
+
+function processRPEFeedback(rpe, lift) {
+  if (!lift) return;
+  const plan = getActivePlan();
+  if (!plan || !plan.rpeAdjustment) return;
+
+  const { lowThreshold, highThreshold, consecutiveSessions, adjustmentPct } = plan.rpeAdjustment;
+
+  const historyKey = 'll_rpe_history_' + lift.replace(/\s+/g, '_');
+  let history = JSON.parse(localStorage.getItem(historyKey) || '[]');
+  history.push(rpe);
+  if (history.length > consecutiveSessions) history = history.slice(-consecutiveSessions);
+  localStorage.setItem(historyKey, JSON.stringify(history));
+
+  if (history.length >= consecutiveSessions) {
+    const allLow = history.every(r => r <= lowThreshold);
+    const allHigh = history.every(r => r >= highThreshold);
+    let overrides = JSON.parse(localStorage.getItem('ll_rpe_overrides') || '{}');
+
+    if (allLow) {
+      overrides[lift] = (overrides[lift] || 0) + adjustmentPct;
+      localStorage.setItem('ll_rpe_overrides', JSON.stringify(overrides));
+      showToast(`Load increased +${adjustmentPct}% for ${lift}`);
+    } else if (allHigh) {
+      overrides[lift] = (overrides[lift] || 0) - adjustmentPct;
+      localStorage.setItem('ll_rpe_overrides', JSON.stringify(overrides));
+      showToast(`Load decreased -${adjustmentPct}% for ${lift}`);
+    }
+  }
 }
 
 // COMPLETION CELEBRATION
