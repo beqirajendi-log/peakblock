@@ -917,9 +917,6 @@ function saveDay(d){
       switchPage('profile');
       goProfileScreen('profile-review');
       showToast('Cycle complete! 🎉');
-    } else {
-      switchPage('dashboard');
-      renderDashboard();
     }
     if (prOneRM) showPRCelebration(lift, prOneRM);
   });
@@ -3007,8 +3004,8 @@ function showCompletionCelebration(onComplete) {
   if (navigator.vibrate) navigator.vibrate(30);
   setTimeout(() => {
     overlay.classList.remove('active');
-    setTimeout(() => { onComplete(); }, 250);
-  }, 900);
+    setTimeout(() => { onComplete(); }, 150);
+  }, 500);
 }
 
 // PR CELEBRATION
