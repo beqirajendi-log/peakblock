@@ -41,10 +41,6 @@ body { font-family: 'Geist', sans-serif; background: var(--bg); color: var(--tex
   font-size: 22px; letter-spacing: 4px; color: var(--accent);
   line-height: 1;
 }
-.top-header-bell {
-  width: 24px; height: 24px; color: var(--muted); cursor: pointer;
-  flex-shrink: 0;
-}
 .header-actions { display: flex; align-items: center; gap: 12px; }
 .header-theme-btn { background: none; border: none; padding: 0; cursor: pointer; color: var(--muted); width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: transform 0.2s, opacity 0.2s; }
 .header-theme-btn:active { transform: scale(0.85); }

@@ -2639,8 +2639,8 @@ function applyProfilePhoto(url) {
   el.style.backgroundImage = 'url('+url+')';
   el.style.backgroundSize = 'cover';
   el.style.backgroundPosition = 'center';
-  const svg = el.querySelector('svg');
-  if(svg) svg.style.display = 'none';
+  const initials = document.getElementById('profile-initials');
+  if(initials) initials.style.display = 'none';
 }
 
 

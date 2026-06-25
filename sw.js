@@ -1,4 +1,4 @@
-const CACHE = 'strive-v140';
+const CACHE = 'strive-v141';
 const ASSETS = [
   '/strive/',
   '/strive/index.html',
