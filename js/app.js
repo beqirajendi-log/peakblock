@@ -1846,7 +1846,7 @@ function showProgramReadyOverlay() {
 }
 
 function showPlanConfirm(planId) {
-  const planNames = {'12week':'12-Week Periodization','531':'5/3/1 Wendler','dumbbells':'Dumbbell PPL'};
+  const planNames = {'12week':'12-Week Periodization','531':'5/3/1 Wendler','dumbbells':'Dumbbells Only'};
   const overlay = document.createElement('div');
   overlay.id = 'plan-confirm-overlay';
   overlay.style.cssText = 'position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;padding:1.5rem;';
@@ -1944,7 +1944,7 @@ function updatePlanBadges() {
   const archived = JSON.parse(localStorage.getItem('ll_archived') || '[]');
   const count12 = archived.filter(c => (c.plan==='12-Week Periodization'||!c.plan) && !c.cancelled).length;
   const count531 = archived.filter(c => c.plan==='5/3/1 Wendler' && !c.cancelled).length;
-  const countDbl = archived.filter(c => c.plan==='Dumbbell PPL' && !c.cancelled).length;
+  const countDbl = archived.filter(c => (c.plan==='Dumbbells Only'||c.plan==='Dumbbell PPL') && !c.cancelled).length;
 
   [['plan-12w','12week'], ['p-plan-12w','12week'], ['plan-531','531'], ['p-plan-531','531'],
    ['plan-dbl','dumbbells'], ['p-plan-dbl','dumbbells']].forEach(([prefix, planId]) => {
@@ -1985,30 +1985,33 @@ function buildSessionView(d, lift, presc, saved, hasSave, isSkipped) {
       bodyHtml += `<div class="ex-section-label">EXERCISES</div>`;
       exercises.forEach(ex => {
         const first = ex.sets[0] || {};
-        const allSame = ex.sets.every(s => s.reps === first.reps && !!s.amrap === !!first.amrap);
+        const count = ex.sets.length;
+        const repsStr = String(first.reps);
         let setRowsHtml = '';
-        if (allSame) {
-          const effortHtml = first.amrap
-            ? `<span class="set-load-effort">AMRAP</span>`
-            : `<span class="set-load-effort">${first.effort || 'WORK'}</span>`;
+        if (ex.timeBase) {
+          // Time-based (e.g. Plank): "3 × 1 min" — no separator, no effort
           setRowsHtml = `<div class="set-row">
-            <span class="set-num">${ex.sets.length} × ${first.reps}</span>
+            <span class="set-num">${count} × ${repsStr}</span>
+            <span class="set-sep"></span>
+            <span></span>
+            <span class="set-meta"></span>
+          </div>`;
+        } else if (first.effort) {
+          // Effort-based (e.g. "3 × 12+ · MEDIUM")
+          setRowsHtml = `<div class="set-row">
+            <span class="set-num">${count} × ${repsStr}</span>
             <span class="set-sep">·</span>
-            ${effortHtml}
+            <span class="set-load-effort">${first.effort.toUpperCase()}</span>
             <span class="set-meta"></span>
           </div>`;
         } else {
-          ex.sets.forEach(s => {
-            const effortHtml = s.amrap
-              ? `<span class="set-load-effort">AMRAP</span>`
-              : `<span class="set-load-effort">${s.effort || 'WORK'}</span>`;
-            setRowsHtml += `<div class="set-row">
-              <span class="set-num">1 × ${s.reps}</span>
-              <span class="set-sep">·</span>
-              ${effortHtml}
-              <span class="set-meta"></span>
-            </div>`;
-          });
+          // Abs / no effort: "3 × 12+" with nothing after
+          setRowsHtml = `<div class="set-row">
+            <span class="set-num">${count} × ${repsStr}</span>
+            <span class="set-sep"></span>
+            <span></span>
+            <span class="set-meta"></span>
+          </div>`;
         }
         bodyHtml += `<div class="ex-block">
           <div class="ex-name-row"><span class="ex-name">${ex.name}</span></div>
