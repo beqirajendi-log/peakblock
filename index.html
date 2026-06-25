@@ -208,14 +208,17 @@
     </div>
   </div>
   <div style="padding:0 1.25rem 0.5rem">
-    <div id="dash-next-card"></div>
-    <div id="dash-last-card"></div>
-    <div class="dash-card" id="dash-cycle-card"></div>
+    <div class="dual-card-row">
+      <div class="mini-card last-session-mini" id="lastSessionMini"></div>
+      <div class="mini-card next-session-mini" id="nextSessionMini"></div>
+    </div>
+    <div class="cycle-card-horiz" id="cycleProgressCard"></div>
     <div class="consistency-card">
-      <div class="consistency-toggle">
-        <button class="active" data-view="month" onclick="switchConsistency('month')">Month</button>
-        <button data-view="year" onclick="switchConsistency('year')">Year</button>
-        <button data-view="alltime" onclick="switchConsistency('alltime')">All Time</button>
+      <div class="toggle">
+        <div class="toggle-btn active" data-view="week" onclick="switchConsistency('week')">Week</div>
+        <div class="toggle-btn" data-view="month" onclick="switchConsistency('month')">Month</div>
+        <div class="toggle-btn" data-view="year" onclick="switchConsistency('year')">Year</div>
+        <div class="toggle-btn" data-view="alltime" onclick="switchConsistency('alltime')">All Time</div>
       </div>
       <div id="consistencyContent"></div>
     </div>

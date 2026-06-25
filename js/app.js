@@ -393,67 +393,62 @@ function renderDashboard() {
   const plan = activePlan ? getActivePlan() : null;
   const u = weightUnit();
 
-  const nextEl = document.getElementById('dash-next-card');
-  if (nextEl) {
+  // LAST SESSION MINI CARD
+  const lastMini = document.getElementById('lastSessionMini');
+  if (lastMini) {
+    const sessions = getRecentSessions(1);
+    if (sessions.length === 0) {
+      lastMini.style.display = 'none';
+    } else {
+      lastMini.style.display = '';
+      const s = sessions[0];
+      const dateStr = s.ts ? new Date(s.ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+      const topSet = s.load
+        ? 'Top set: ' + s.load + ' ' + u + ' \xd7 ' + (s.reps || '—')
+        : 'Completed';
+      lastMini.innerHTML =
+        '<span class="mini-badge mini-badge-done">✓ DONE</span>' +
+        '<div class="mini-lift">' + (s.lift || '—') + '</div>' +
+        '<div class="mini-meta">' + topSet + '</div>' +
+        (dateStr ? '<div class="mini-date">' + dateStr + ' \xb7 Wk ' + s.week + '</div>' : '');
+      lastMini.onclick = function() { switchPage('log'); currentWeek = s.week; renderAll(); };
+      lastMini.style.cursor = 'pointer';
+    }
+  }
+
+  // NEXT SESSION MINI CARD
+  const nextMini = document.getElementById('nextSessionMini');
+  if (nextMini) {
     if (!activePlan) {
-      nextEl.innerHTML = '<div class="dash-card" style="border-left:3px solid var(--accent);padding:1.25rem">' +
-        '<div style="font-family:\'Geist\',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:4px">No program selected</div>' +
-        '<div style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5">Choose a program or build your own to get started.</div>' +
-        '<button onclick="showObOverlay()" style="padding:10px 22px;font-family:\'Geist\',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border:1px solid var(--accent);background:transparent;color:var(--accent);border-radius:var(--rs);cursor:pointer;transition:all 0.15s" onmouseover="this.style.background=\'var(--accent)\';this.style.color=\'#111\'" onmouseout="this.style.background=\'transparent\';this.style.color=\'var(--accent)\'">Choose Program →</button>' +
-        '</div>';
+      nextMini.innerHTML =
+        '<div class="mini-lift" style="font-size:13px;font-family:\'Geist\',sans-serif;font-weight:700">No program</div>' +
+        '<div class="mini-meta" style="margin-top:6px"><span onclick="showObOverlay()" style="color:#61D2DA;cursor:pointer;text-decoration:underline">Choose a program</span></div>';
     } else {
       const next = getNextWorkout();
       if (next && next.complete) {
-        nextEl.innerHTML = '<div class="dash-card" style="text-align:center;padding:1.5rem">' +
-          '<div style="font-size:30px;margin-bottom:8px">🏆</div>' +
-          '<div style="font-family:\'Bebas Neue\',\'Geist\',sans-serif;font-size:22px;letter-spacing:1px;color:var(--text)">Cycle Complete</div>' +
-          '<div style="font-size:13px;color:var(--muted);margin-top:4px">All weeks logged. Start a new cycle in Profile.</div>' +
-          '</div>';
+        nextMini.innerHTML =
+          '<div class="mini-lift" style="font-size:14px;font-family:\'Geist\',sans-serif;font-weight:700">🏆 Cycle Complete</div>' +
+          '<div class="mini-meta" style="margin-top:4px">All weeks logged.</div>';
       } else if (next) {
-        const liftColor = LIFT_COLORS[next.lift] || 'var(--accent)';
-        const _td = new Date();
-        const _todayKey = _td.getFullYear() + '-' + String(_td.getMonth()+1).padStart(2,'0') + '-' + String(_td.getDate()).padStart(2,'0');
-        const _completedDates = JSON.parse(localStorage.getItem('ll_completed_dates') || '[]');
-        const _cardLabel = _completedDates.includes(_todayKey) ? 'Next Workout' : 'Today\'s Workout';
-        nextEl.innerHTML = '<div class="dash-card" style="border-left:3px solid ' + liftColor + '">' +
-          '<div class="dash-next-label">' + _cardLabel + ' — Wk ' + next.week + ' · ' + next.dayLabel + '</div>' +
-          '<div class="dash-next-lift" style="color:' + liftColor + '">' + (next.lift || '—') + '</div>' +
-          '<button class="dash-start-btn" onclick="switchPage(\'log\');currentWeek=' + next.week + ';renderAll()">Start Workout →</button>' +
-          '</div>';
+        const td = new Date();
+        const todayKey = td.getFullYear() + '-' + String(td.getMonth()+1).padStart(2,'0') + '-' + String(td.getDate()).padStart(2,'0');
+        const completedDates = JSON.parse(localStorage.getItem('ll_completed_dates') || '[]');
+        const badgeClass = completedDates.includes(todayKey) ? 'mini-badge-next' : 'mini-badge-today';
+        const badgeText = completedDates.includes(todayKey) ? 'NEXT WORKOUT' : 'TODAY';
+        const scheme = plan.weeklyScheme ? plan.weeklyScheme[next.week - 1] : null;
+        const setsReps = (scheme && typeof scheme.sets === 'number' && typeof scheme.reps === 'number')
+          ? ' \xb7 ' + scheme.sets + '\xd7' + scheme.reps : '';
+        nextMini.innerHTML =
+          '<span class="mini-badge ' + badgeClass + '">' + badgeText + '</span>' +
+          '<div class="mini-lift">' + (next.lift || '—') + '</div>' +
+          '<div class="mini-meta">Wk ' + next.week + ' \xb7 ' + next.dayLabel + setsReps + '</div>' +
+          '<button class="mini-start-btn" onclick="switchPage(\'log\');currentWeek=' + next.week + ';renderAll()">Start →</button>';
       }
     }
   }
 
-  const lastEl = document.getElementById('dash-last-card');
-  if (lastEl) {
-    const sessions = getRecentSessions(1);
-    if (sessions.length === 0) {
-      lastEl.style.display = 'none';
-    } else {
-      lastEl.style.display = '';
-      const s = sessions[0];
-      const color = LIFT_COLORS[s.lift] || 'var(--accent)';
-      const dayLabel = 'Wk ' + s.week + ' · Day ' + s.day;
-      const dateStr = s.ts ? new Date(s.ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
-      const topSetHtml = s.load
-        ? '<div style="font-size:13px;color:var(--text);margin-top:8px;font-weight:600">Top set: ' + s.load + ' ' + u + ' \xd7 ' + (s.reps || '—') + '</div>'
-        : '';
-      const dateHtml = dateStr ? '<div style="font-size:12px;color:var(--muted);margin-top:2px">' + dateStr + '</div>' : '';
-      lastEl.innerHTML =
-        '<div class="dash-card" style="background:var(--surface2);border-left:3px solid ' + color + ';cursor:pointer" onclick="switchPage(\'log\');currentWeek=' + s.week + ';renderAll()">' +
-        '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">' +
-        '<div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted)">Last Session</div>' +
-        '<span style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:rgba(0,166,112,0.15);color:#00A670;padding:3px 8px;border-radius:20px">✓ Completed</span>' +
-        '</div>' +
-        '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:20px;letter-spacing:1px;color:' + color + ';line-height:1">' + (s.lift || '—') + '</div>' +
-        '<div style="font-size:11px;color:var(--muted);margin-top:2px">' + dayLabel + '</div>' +
-        topSetHtml + dateHtml +
-        '</div>';
-    }
-  }
-
   renderCycleProgress();
-  renderConsistency('month');
+  renderConsistency('week');
 }
 
 
@@ -2688,7 +2683,7 @@ function migrateCompletedDates() {
 }
 
 // CONSISTENCY WIDGET STATE
-let _conView = 'month';
+let _conView = 'week';
 let _conMonth = new Date().getMonth();
 let _conYear = new Date().getFullYear();
 
@@ -2697,7 +2692,7 @@ function switchConsistency(view) {
   const today = new Date();
   if(view === 'month') { _conMonth = today.getMonth(); _conYear = today.getFullYear(); }
   if(view === 'year')  { _conYear = today.getFullYear(); }
-  document.querySelectorAll('.consistency-toggle button').forEach(b => {
+  document.querySelectorAll('.toggle-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.view === view);
   });
   renderConsistency(view);
@@ -2707,13 +2702,46 @@ function renderConsistency(view) {
   const el = document.getElementById('consistencyContent');
   if(!el) return;
   _conView = view || _conView;
-  if(_conView === 'month')   _renderConMonth(el);
+  if(_conView === 'week')         _renderConWeek(el);
+  else if(_conView === 'month')   _renderConMonth(el);
   else if(_conView === 'year')    _renderConYear(el);
   else                             _renderConAllTime(el);
 }
 
 function _conDateStr(d) {
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function _renderConWeek(el) {
+  const completed = new Set(JSON.parse(localStorage.getItem('ll_completed_dates') || '[]'));
+  const today = new Date();
+  const todayStr = _conDateStr(today);
+  // Week starts Monday: offset so Mon=0
+  const dow = (today.getDay() + 6) % 7;
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - dow);
+  const DAY_LABELS = ['M','T','W','T','F','S','S'];
+  let weekCount = 0;
+  let pills = '';
+  for(let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const ds = _conDateStr(d);
+    const isDone = completed.has(ds);
+    const isToday = ds === todayStr;
+    if(isDone) weekCount++;
+    let dotClass = 'wday-dot';
+    if(isDone) dotClass += ' filled';
+    if(isToday) dotClass += ' today';
+    const label = isDone ? '✓' : String(d.getDate());
+    pills += '<div class="wday"><div class="wday-label">' + DAY_LABELS[i] + '</div><div class="' + dotClass + '">' + label + '</div></div>';
+  }
+  el.innerHTML =
+    '<div class="week-strip">' + pills + '</div>' +
+    '<div style="margin-top:14px;display:flex;align-items:baseline;gap:6px">' +
+      '<span style="font-family:\'Bebas Neue\',sans-serif;font-size:24px;color:var(--text)">' + weekCount + '</span>' +
+      '<span style="font-size:12px;color:var(--muted)">session' + (weekCount !== 1 ? 's' : '') + ' this week</span>' +
+    '</div>';
 }
 
 function _renderConMonth(el) {
@@ -2768,10 +2796,10 @@ function _renderConMonth(el) {
       <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--text)">${MONTH_NAMES[mo].toUpperCase()} ${yr}</div>
       <button onclick="_conNavMonth(1)" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:0 6px;line-height:1">›</button>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:8px">
-      ${DOW.map(d=>`<div style="text-align:center;font-size:10px;text-transform:uppercase;color:var(--muted2);letter-spacing:1px;padding-bottom:4px">${d}</div>`).join('')}
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:6px">
+      ${DOW.map(d=>`<div style="text-align:center;font-size:9px;text-transform:uppercase;color:var(--muted2);letter-spacing:1px;padding-bottom:3px">${d}</div>`).join('')}
     </div>
-    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">${cells}</div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px">${cells}</div>
     <div style="margin-top:14px;display:flex;align-items:baseline;gap:6px">
       <span style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--text)">${monthCount}</span>
       <span style="font-size:12px;color:var(--muted)">sessions this month</span>
@@ -2855,7 +2883,7 @@ function _renderConAllTime(el) {
 }
 
 function renderCycleProgress() {
-  const el = document.getElementById('dash-cycle-card');
+  const el = document.getElementById('cycleProgressCard');
   if(!el) return;
   if(!activePlan || !PROGRAMS[activePlan]) { el.style.display = 'none'; return; }
   el.style.display = '';
@@ -2872,27 +2900,24 @@ function renderCycleProgress() {
     if(wCount >= daysPerWeek) completedWeeks++;
   }
   const pct = Math.round((completedWeeks / totalWeeks) * 100);
-  const canvasId = 'cycle-chart-canvas';
-  el.innerHTML = `
-    <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Cycle Progress</div>
-    <div style="position:relative;width:140px;height:140px;margin:0 auto 12px">
-      <canvas id="${canvasId}"></canvas>
-      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:42px;color:var(--text);line-height:1;letter-spacing:0.5px">${pct}%</div>
-      </div>
-    </div>
-    <div style="text-align:center;font-size:12px;color:var(--muted)">Week ${currentWeek} of ${totalWeeks} · ${totalSessions} sessions</div>`;
-  if(window._cycleChart) { try{ window._cycleChart.destroy(); }catch(e){} window._cycleChart = null; }
-  const ctx = document.getElementById(canvasId)?.getContext('2d');
-  if(!ctx || typeof Chart === 'undefined') return;
-  const remaining = Math.max(totalWeeks - completedWeeks, 0);
-  window._cycleChart = new Chart(ctx, {
-    type: 'doughnut',
-    data: { datasets: [{ data: [completedWeeks || 0.001, remaining || 0.001], backgroundColor: ['#008089', '#2e2e2e'], borderWidth: 0, hoverOffset: 0 }] },
-    options: { responsive: true, maintainAspectRatio: true, cutout: '76%',
-      plugins: { legend: { display: false }, tooltip: { enabled: false } },
-      animation: { duration: 600 } }
-  });
+  const r = 26, sw = 7, circ = 2 * Math.PI * r;
+  const dashOffset = circ * (1 - pct / 100);
+  const scheme = plan.weeklyScheme ? plan.weeklyScheme[currentWeek - 1] : null;
+  const phase = scheme?.phase || '';
+  el.innerHTML =
+    '<div class="cycle-donut-wrap">' +
+      '<svg width="64" height="64" viewBox="0 0 64 64">' +
+        '<circle cx="32" cy="32" r="' + r + '" fill="none" stroke="var(--border2)" stroke-width="' + sw + '"/>' +
+        '<circle cx="32" cy="32" r="' + r + '" fill="none" stroke="#008089" stroke-width="' + sw + '" stroke-linecap="round"' +
+          ' stroke-dasharray="' + circ.toFixed(2) + '" stroke-dashoffset="' + dashOffset.toFixed(2) + '"/>' +
+      '</svg>' +
+      '<div class="cycle-donut-center"><span class="cycle-donut-pct">' + pct + '</span></div>' +
+    '</div>' +
+    '<div class="cycle-horiz-info">' +
+      '<div class="cycle-horiz-name">' + (plan.name || 'Program') + '</div>' +
+      (phase ? '<div class="cycle-horiz-phase">' + phase + '</div>' : '') +
+      '<div class="cycle-horiz-week">Week ' + currentWeek + ' of ' + totalWeeks + ' \xb7 ' + totalSessions + ' sessions done</div>' +
+    '</div>';
 }
 
 
