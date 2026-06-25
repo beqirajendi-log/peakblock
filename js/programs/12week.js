@@ -15,7 +15,7 @@ PROGRAMS['12week'] = {
   },
   dayLifts: ['Back Squat','Bench Press','Deadlift','Shoulder Press'],
   weeklyScheme: [
-    {phase:'Accumulation',    sets:5, reps:5, pct:0.750, deload:false, dayNotes:{1:'Accumulation phase begins. Focus on bar path and consistency over load.'}},
+    {phase:'Accumulation',    sets:5, reps:5, pct:0.750, deload:false},
     {phase:'Accumulation',    sets:5, reps:5, pct:0.775, deload:false},
     {phase:'Accumulation',    sets:5, reps:5, pct:0.800, deload:false},
     {phase:'Deload',          sets:3, reps:5, pct:0.600, deload:true},

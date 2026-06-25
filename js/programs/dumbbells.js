@@ -18,7 +18,6 @@ PROGRAMS['dumbbells'] = {
 (function() {
   const pushDay = {
     label: 'Push',
-    notes: 'Start lighter than you think. Volume adds up fast across 5 exercises — pick a weight where you can hit at least 8 clean reps per set.',
     exercises: [
       { name: 'Dumbbell Chest Press',        tier: 'main', sets: [{ reps: 12, amrap: true }, { reps: 12, amrap: true }, { reps: 12, amrap: true }] },
       { name: 'Incline Dumbbell Fly',         tier: 'main', sets: [{ reps: 12, amrap: true }, { reps: 12, amrap: true }, { reps: 12, amrap: true }] },
@@ -30,7 +29,6 @@ PROGRAMS['dumbbells'] = {
 
   const pullDay = {
     label: 'Pull',
-    notes: 'Pull-ups too easy? Hold a dumbbell between your feet to add load. Same concept for hanging leg raises.',
     exercises: [
       { name: 'Pull-ups',                     tier: 'main', sets: [{ reps: 12, amrap: true }, { reps: 12, amrap: true }, { reps: 12, amrap: true }] },
       { name: 'Bent-over Dumbbell Row',       tier: 'main', sets: [{ reps: 12, amrap: true }, { reps: 12, amrap: true }, { reps: 12, amrap: true }] },
@@ -43,7 +41,6 @@ PROGRAMS['dumbbells'] = {
 
   const legsDay = {
     label: 'Legs',
-    notes: 'Goblet squats getting too easy? Progress to Bulgarian split squats or pistol squats — both are significantly harder per leg.',
     exercises: [
       { name: 'Goblet Squat',                 tier: 'main', sets: [{ reps: 12, amrap: true }, { reps: 12, amrap: true }, { reps: 12, amrap: true }] },
       { name: 'Dumbbell Lunge',               tier: 'main', sets: [{ reps: 12, amrap: true }, { reps: 12, amrap: true }, { reps: 12, amrap: true }] },

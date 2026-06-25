@@ -19,7 +19,7 @@ PROGRAMS['531'] = {
   // 4-week cycle repeating x3: 5s week, 3s week, 5/3/1 week, deload
   weeklyScheme: [
     // Cycle 1
-    {phase:'5s Week',   sets:[{s:1,r:5,pct:0.65},{s:1,r:5,pct:0.75},{s:1,r:5,pct:0.85,amrap:true}], cycle:1, dayNotes:{1:'First week of the cycle. Work up to your top set and hit the AMRAP — leave nothing in the tank.'}},
+    {phase:'5s Week',   sets:[{s:1,r:5,pct:0.65},{s:1,r:5,pct:0.75},{s:1,r:5,pct:0.85,amrap:true}], cycle:1},
     {phase:'3s Week',   sets:[{s:1,r:3,pct:0.70},{s:1,r:3,pct:0.80},{s:1,r:3,pct:0.90,amrap:true}], cycle:1},
     {phase:'5/3/1 Week',sets:[{s:1,r:5,pct:0.75},{s:1,r:3,pct:0.85},{s:1,r:1,pct:0.95,amrap:true}], cycle:1},
     {phase:'Deload',    sets:[{s:1,r:5,pct:0.40},{s:1,r:5,pct:0.50},{s:1,r:5,pct:0.60}], deload:true, cycle:1},

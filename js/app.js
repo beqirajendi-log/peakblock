@@ -675,7 +675,6 @@ function renderDays(anim){
         <div class="day-card-body-inner">
           <div class="day-card-body-content">
             <div class="day-check" style="display:none"></div>
-            ${selLift ? `<div class="day-lift-name">${selLift}</div>` : ''}
             ${buildSessionView(d, selLift, presc, saved, hasSave, isSkipped)}
           </div>
         </div>
@@ -1967,105 +1966,129 @@ function updatePlanBadges() {
 
 
 
-function buildFixedSessionView(d, dayData, saved, hasSave, isSkipped) {
-  const notesHtml = dayData?.notes ? `<div class="day-notes">
-    <span class="day-notes-icon">💡</span>
-    <p class="day-notes-text">${dayData.notes}</p>
-  </div>` : '';
+function buildSessionView(d, lift, presc, saved, hasSave, isSkipped) {
+  const plan = getActivePlan();
+  const u = weightUnit();
+  const isFixed = plan.progressionType === 'fixed';
+  const rpeOverrides = JSON.parse(localStorage.getItem('ll_rpe_overrides') || '{}');
+  const rpeOvr = lift ? (rpeOverrides[lift] || 0) : 0;
+  const rpeTagHtml = rpeOvr !== 0
+    ? `<span class="rpe-tag ${rpeOvr > 0 ? 'up' : 'down'}">${rpeOvr > 0 ? '↑ +' : '↓ '}${Math.abs(rpeOvr)}%</span>`
+    : '';
 
-  let setsHtml = '';
-  if (dayData?.exercises?.length > 0) {
-    dayData.exercises.forEach(ex => {
-      setsHtml += `<div class="session-set-row">
-        <span class="session-set-num" style="font-size:12px;color:var(--muted);font-weight:600;min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ex.name}</span>
-        <span class="session-set-text" style="flex-shrink:0">${ex.sets.length}&nbsp;×&nbsp;${ex.sets[0].reps}&nbsp;&nbsp;·&nbsp;&nbsp;<span style="font-size:11px;color:var(--accent);letter-spacing:0.5px">AMRAP</span></span>
+  let bodyHtml = '';
+
+  if (isFixed) {
+    const dayData = plan.weeks_data?.['week' + currentWeek]?.days?.['day' + d];
+    const exercises = dayData?.exercises || [];
+    if (exercises.length > 0) {
+      bodyHtml += `<div class="ex-section-label">EXERCISES</div>`;
+      exercises.forEach(ex => {
+        const first = ex.sets[0] || {};
+        const allSame = ex.sets.every(s => s.reps === first.reps && !!s.amrap === !!first.amrap);
+        let setRowsHtml = '';
+        if (allSame) {
+          const effortHtml = first.amrap
+            ? `<span class="set-load-effort">AMRAP</span>`
+            : `<span class="set-load-effort">${first.effort || 'WORK'}</span>`;
+          setRowsHtml = `<div class="set-row">
+            <span class="set-num">${ex.sets.length} × ${first.reps}</span>
+            <span class="set-sep">·</span>
+            ${effortHtml}
+            <span class="set-meta"></span>
+          </div>`;
+        } else {
+          ex.sets.forEach(s => {
+            const effortHtml = s.amrap
+              ? `<span class="set-load-effort">AMRAP</span>`
+              : `<span class="set-load-effort">${s.effort || 'WORK'}</span>`;
+            setRowsHtml += `<div class="set-row">
+              <span class="set-num">1 × ${s.reps}</span>
+              <span class="set-sep">·</span>
+              ${effortHtml}
+              <span class="set-meta"></span>
+            </div>`;
+          });
+        }
+        bodyHtml += `<div class="ex-block">
+          <div class="ex-name-row"><span class="ex-name">${ex.name}</span></div>
+          <div class="set-rows">${setRowsHtml}</div>
+        </div>`;
+      });
+    }
+  } else {
+    // Percentage-based programs (12week, 531)
+    if (lift && presc && presc.displaySets && presc.displaySets.length > 0) {
+      const hasPR = (setupData[lift] || 0) > 0;
+      const workingSets = presc.displaySets.filter(s => !s.warmup);
+      bodyHtml += `<div class="ex-section-label">MAIN LIFT</div>`;
+      const allSame = workingSets.length > 0 && workingSets.every(
+        s => s.repsDisplay === workingSets[0].repsDisplay && s.pctLabel === workingSets[0].pctLabel
+      );
+      let setRowsHtml = '';
+      if (allSame && workingSets.length > 0) {
+        const s0 = workingSets[0];
+        const totalSets = workingSets.reduce((acc, s) => acc + parseInt(s.setsDisplay || '1', 10), 0);
+        const loadHtml = s0.load !== null && s0.load !== undefined
+          ? `<span class="set-load-gold">${s0.load} ${u}</span>`
+          : `<span class="set-load-pct" onclick="show1RMModal(${d},'${lift}')">${s0.pctLabel.replace(' 1RM', '')}</span>`;
+        setRowsHtml = `<div class="set-row">
+          <span class="set-num">${totalSets} × ${s0.repsDisplay}</span>
+          <span class="set-sep">@</span>
+          ${loadHtml}
+          <span class="set-meta">${s0.amrap && hasPR ? 'AMRAP' : ''}</span>
+        </div>`;
+      } else {
+        workingSets.forEach(s => {
+          const loadHtml = s.load !== null && s.load !== undefined
+            ? `<span class="set-load-gold">${s.load} ${u}</span>`
+            : `<span class="set-load-pct" onclick="show1RMModal(${d},'${lift}')">${s.pctLabel.replace(' 1RM', '')}</span>`;
+          setRowsHtml += `<div class="set-row">
+            <span class="set-num">${s.setsDisplay} × ${s.repsDisplay}</span>
+            <span class="set-sep">@</span>
+            ${loadHtml}
+            <span class="set-meta">${s.amrap && hasPR ? 'AMRAP' : ''}</span>
+          </div>`;
+        });
+      }
+      bodyHtml += `<div class="ex-block">
+        <div class="ex-name-row">
+          <span class="ex-name">${lift}</span>
+          ${rpeTagHtml}
+        </div>
+        <div class="set-rows">${setRowsHtml}</div>
       </div>`;
-    });
+    } else if (!lift) {
+      bodyHtml = `<div style="font-size:13px;color:var(--muted);padding:12px 0">No lift assigned</div>`;
+    } else {
+      bodyHtml = `<div style="font-size:13px;color:var(--muted);padding:12px 0">Set your 1RM to see weights</div>`;
+    }
+
+    // Accessories
+    const accs = saved?.accs || (plan.accessories && plan.accessories[d]) || [];
+    const filteredAccs = accs.filter(a => a.ex && a.ex !== '');
+    if (filteredAccs.length > 0) {
+      bodyHtml += `<div class="ex-section-label" style="margin-top:16px">ACCESSORIES</div>`;
+      filteredAccs.forEach(a => {
+        bodyHtml += `<div class="ex-block">
+          <div class="ex-name-row"><span class="ex-name">${a.ex}</span></div>
+          <div class="set-rows">
+            <div class="set-row">
+              <span class="set-num">${a.s} × ${a.r}</span>
+              <span class="set-sep">·</span>
+              <span class="set-load-effort">MEDIUM</span>
+              <span class="set-meta"></span>
+            </div>
+          </div>
+        </div>`;
+      });
+    }
   }
 
   const btnHtml = `<button class="complete-day-btn${hasSave ? ' completed' : ''}" id="sb-${d}"
     onclick="saveDay(${d})">${hasSave ? '✓ Day Complete' : 'Complete Day'}</button>`;
 
-  return `
-    ${notesHtml}
-    <div class="session-sets" style="margin-bottom:4px">${setsHtml}</div>
-    ${btnHtml}`;
-}
-
-function buildSessionView(d, lift, presc, saved, hasSave, isSkipped) {
-  const plan = getActivePlan();
-  const u = weightUnit();
-
-  if (plan.progressionType === 'fixed') {
-    const dayData = plan.weeks_data?.['week' + currentWeek]?.days?.['day' + d];
-    return buildFixedSessionView(d, dayData, saved, hasSave, isSkipped);
-  }
-
-  // Day notes
-  const weekScheme = plan.weeklyScheme ? plan.weeklyScheme[currentWeek-1] : null;
-  const dayNote = weekScheme?.dayNotes?.[d];
-  const notesHtml = dayNote ? `<div class="day-notes">
-    <span class="day-notes-icon">💡</span>
-    <p class="day-notes-text">${dayNote}</p>
-  </div>` : '';
-
-  // RPE override tag
-  const rpeOverrides = JSON.parse(localStorage.getItem('ll_rpe_overrides') || '{}');
-  const rpeOvr = lift ? (rpeOverrides[lift] || 0) : 0;
-
-  let setsHtml = '';
-
-  if(lift && presc && presc.displaySets && presc.displaySets.length > 0) {
-    presc.displaySets.forEach(s => {
-      let loadText;
-      if(s.load !== null && s.load !== undefined) {
-        const subSpan = s.pctClickable
-          ? `<span class="session-set-pct-sub" onclick="show1RMModal(${d},'${lift}')" style="cursor:pointer"> @ ${s.pctLabel}</span>`
-          : `<span class="session-set-pct-sub"> ${s.pctLabel}</span>`;
-        const rpeTag = (rpeOvr !== 0 && !s.warmup)
-          ? `<span class="rpe-tag ${rpeOvr > 0 ? 'up' : 'down'}">${rpeOvr > 0 ? '↑ +' : '↓ '}${Math.abs(rpeOvr)}%</span>`
-          : '';
-        loadText = `<span class="session-set-load-gold">${s.load} ${u}</span>${subSpan}${rpeTag}`;
-      } else {
-        loadText = `<span class="session-set-pct" onclick="show1RMModal(${d},'${lift}')">${s.pctLabel}</span>`;
-      }
-      const amrap = s.amrap ? `<span style="font-size:11px;color:var(--accent);margin-left:6px">AMRAP</span>` : '';
-      setsHtml += `<div class="session-set-row">
-        <span class="session-set-num">${s.setNum}</span>
-        <span class="session-set-text">${s.setsDisplay}×${s.repsDisplay} @ ${loadText}${amrap}</span>
-      </div>`;
-    });
-  } else if(lift && presc) {
-    setsHtml = `<div style="font-size:13px;color:var(--muted);padding:8px 0">Set your 1RM to see weights</div>`;
-  } else {
-    setsHtml = `<div style="font-size:13px;color:var(--muted);padding:8px 0">No lift assigned</div>`;
-  }
-
-  // Accessories
-  const accs = saved?.accs || (plan.accessories && plan.accessories[d]) || [];
-  let accHtml = '';
-  if(accs.length > 0) {
-    accHtml = `<div class="acc-divider"></div>
-      <div class="section-label" style="margin-bottom:6px">Accessories</div>
-      <div class="session-sets">
-        ${accs.filter(a => a.ex && a.ex !== '').map(a =>
-          `<div class="session-acc-row">
-            <span class="session-acc-sets">${a.s||''}×${a.r||''}</span>
-            <span style="color:var(--muted);font-size:15px">${a.ex}</span>
-          </div>`
-        ).join('')}
-      </div>`;
-  }
-
-  // Complete Day / skip button
-  const btnHtml = `<button class="complete-day-btn${hasSave?' completed':''}" id="sb-${d}"
-    onclick="saveDay(${d})">${hasSave?'✓ Day Complete':'Complete Day'}</button>`;
-
-  return `
-    ${notesHtml}
-    <div class="session-sets" style="margin-bottom:4px">${setsHtml}</div>
-    ${accHtml}
-    ${btnHtml}`;
+  return `<div class="ex-blocks">${bodyHtml}</div>${btnHtml}`;
 }
 
 function buildWorkingRows(d, saved, savedSets, savedReps, savedLoad, presc) {
@@ -2912,7 +2935,7 @@ function saveSet1RM(d, lift) {
   const dayCard = document.getElementById('dc-' + d);
   if(dayCard) {
     const bodyInner = dayCard.querySelector('.day-card-body-content');
-    if(bodyInner) bodyInner.innerHTML = `<div class="day-check" style="display:none"></div>` + (lift ? `<div class="day-lift-name">${lift}</div>` : '') + buildSessionView(d, lift, presc, saved, saved && saved.saved, saved && saved.skipped || false);
+    if(bodyInner) bodyInner.innerHTML = `<div class="day-check" style="display:none"></div>` + buildSessionView(d, lift, presc, saved, saved && saved.saved, saved && saved.skipped || false);
   }
 }
 
